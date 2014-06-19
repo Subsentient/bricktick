@@ -5,11 +5,15 @@
  */
 
 #include <ncurses.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
 #include "bricktick.h"
+
+int Lives = 3;
+unsigned long Score = 0;
 
 int main(int argc, char **argv)
 {
@@ -17,14 +21,29 @@ int main(int argc, char **argv)
 	struct PADDLE Paddle = { 0 };
 	int Key = 0;
 	time_t LastRand = 0, Rand = 0;
-	int Lives = 3;
-	unsigned long Score = 0;
 	int SecTick = 0;
 	
 	initscr();
+	
+	if (COLS < 80 || LINES < 24)
+	{
+		endwin();
+		fprintf(stderr, "Please use a console with a resolution of at least 80x24.\n");
+		exit(1);
+		
+	}
+	
+	if (!has_colors())
+	{
+		endwin();
+		fprintf(stderr, "Bricktick requires color.\n");
+		exit(1);
+	}
+	
 	noecho();
 	halfdelay(1);
 	keypad(stdscr, true);
+	set_escdelay(25);
 	curs_set(0);
 	
 	start_color();
@@ -48,7 +67,8 @@ int main(int argc, char **argv)
 	DrawBall(&Ball);
 	DrawPaddle(&Paddle);
 	
-	while ((Key = getch()) != KEY_END)
+MainLoop:
+	while ((Key = getch()) != 27) /*27 is ESC*/
 	{
 		if (SecTick == 10)
 		{ /*We get score every second for just surviving.*/
@@ -76,9 +96,9 @@ int main(int argc, char **argv)
 				
 				if (Lives == 1)
 				{
-					DrawMessage("GAME OVER -- Press END to exit.");
+					DrawMessage("GAME OVER -- Press ESC to exit.");
 					cbreak();
-					while (getch() != KEY_END);
+					while (getch() != 27); /*ESC*/
 					endwin();
 					exit(0);
 				}
@@ -117,6 +137,13 @@ int main(int argc, char **argv)
 			case KEY_RIGHT:
 				MovePaddle(&Paddle, RIGHT);
 				break;
+			case ' ':
+				DrawMessage("PAUSED");
+				cbreak();
+				while (getch() != ' ');
+				DeleteMessage();
+				halfdelay(1);
+				break;
 			default:
 				break;
 		}
@@ -124,8 +151,22 @@ int main(int argc, char **argv)
 		MoveBall(&Ball);
 	}
 	
+	DrawMessage("Really quit Bricktick? y/n");
+	cbreak();
+	switch (getch())
+	{
+		case 'y':
+		case 'Y':
+			break;
+		default:
+			DeleteMessage();
+			refresh();
+			halfdelay(1);
+			goto MainLoop;
+			break;
+	}
 	DeleteBall(&Ball);
-	
+	DeletePaddle(&Paddle);
 	
 	endwin();
 	

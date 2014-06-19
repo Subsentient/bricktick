@@ -9,6 +9,8 @@
 
 #define DEFAULT_PADDLE_LENGTH COLS / 10
 #define DEFAULT_PADDLE_MOVE (DEFAULT_PADDLE_LENGTH) / 2
+#define BRICKS_PER_LINE 10 /*Ten bricks per line of text*/
+#define BRICK_LINE_COUNT 4  /*Four lines of bricks.*/
 
 typedef signed char Bool;
 
@@ -26,6 +28,11 @@ struct PADDLE
 {
 	int X;
 	int Length;
+};
+
+struct BRICK
+{
+	int X1, X2, Y;
 };
 
 /*Functions.*/
@@ -46,3 +53,8 @@ extern void DrawMessage(const char *const Message);
 extern void DeleteMessage(void);
 extern void DrawLives(int Lives);
 extern void DrawScore(unsigned long Score);
+
+/*Globals*/
+extern int Lives;
+extern unsigned long Score;
+
