@@ -23,6 +23,7 @@ void DrawPaddle(struct PADDLE *Paddle)
 	{
 		addch('#' | A_BOLD);
 	}
+	refresh();
 }
 
 void DeletePaddle(struct PADDLE *Paddle)
@@ -34,6 +35,7 @@ void DeletePaddle(struct PADDLE *Paddle)
 	{
 		addch(' ');
 	}
+	refresh();
 }
 
 Bool MovePaddle(struct PADDLE *Paddle, DirectionX Direction)

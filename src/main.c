@@ -177,6 +177,7 @@ void DrawMessage(const char *const Message)
 {
 	move(LINES / 2, (COLS - strlen(Message)) / 2);
 	addstr(Message);
+	refresh();
 }
 
 void DeleteMessage(void)
@@ -188,6 +189,7 @@ void DeleteMessage(void)
 	{
 		addch(' ');
 	}
+	refresh();
 }
 
 void DrawLives(int Lives)

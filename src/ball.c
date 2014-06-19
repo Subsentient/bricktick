@@ -41,6 +41,7 @@ void DrawBall(struct BALL *Ball)
 	attron(A_BOLD);
 	addch('*' | COLOR_PAIR(2));
 	attroff(A_BOLD);
+	refresh();
 }
 
 void DeleteBall(struct BALL *Ball)
@@ -49,6 +50,7 @@ void DeleteBall(struct BALL *Ball)
 	attron(A_NORMAL);
 	addch(' ');
 	attroff(A_NORMAL);
+	refresh();
 }
 
 void MoveBall(struct BALL *Ball)
