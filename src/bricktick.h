@@ -45,3 +45,4 @@ extern Bool CheckBallHitPaddle(struct BALL *Ball, struct PADDLE *Paddle);
 extern void DrawMessage(const char *const Message);
 extern void DeleteMessage(void);
 extern void DrawLives(int Lives);
+extern void DrawScore(unsigned long Score);

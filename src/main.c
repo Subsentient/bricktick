@@ -18,6 +18,8 @@ int main(int argc, char **argv)
 	int Key = 0;
 	time_t LastRand = 0, Rand = 0;
 	int Lives = 3;
+	unsigned long Score = 0;
+	int SecTick = 0;
 	
 	initscr();
 	noecho();
@@ -33,6 +35,7 @@ int main(int argc, char **argv)
 	
 	/*Show our initial lives count.*/
 	DrawLives(Lives);
+	DrawScore(Score);
 	attrset(COLOR_PAIR(1));
 
 	refresh();
@@ -47,6 +50,14 @@ int main(int argc, char **argv)
 	
 	while ((Key = getch()) != KEY_END)
 	{
+		if (SecTick == 10)
+		{ /*We get score every second for just surviving.*/
+			DrawScore((Score += 2));
+			attrset(COLOR_PAIR(1));
+			SecTick = 0;
+		}
+		++SecTick;
+		
 		if ((Rand = time(NULL)) != LastRand)
 		{
 			srand(Rand);
@@ -146,3 +157,16 @@ void DrawLives(int Lives)
 	attroff(COLOR_PAIR(3));
 	refresh();
 }
+
+void DrawScore(unsigned long Score)
+{
+	char ScoreMSG[128];
+	snprintf(ScoreMSG, sizeof ScoreMSG, "Score: %lu", Score);
+	
+	move(0, COLS - 1 - strlen(ScoreMSG) - 2);
+	attron(COLOR_PAIR(3));
+	addstr(ScoreMSG);
+	attroff(COLOR_PAIR(3));
+	refresh();
+}
+
