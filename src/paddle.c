@@ -19,10 +19,12 @@ void DrawPaddle(struct PADDLE *Paddle)
 	
 	move(LINES - 1, Paddle->X);
 
-	for (; Inc < Paddle->Length; ++Inc)
+	addch('<' | A_BOLD);
+	for (; Inc < Paddle->Length - 2; ++Inc)
 	{
 		addch('#' | A_BOLD);
 	}
+	addch('>' | A_BOLD);
 	refresh();
 }
 
