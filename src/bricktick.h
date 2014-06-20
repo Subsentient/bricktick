@@ -11,11 +11,13 @@
 #define DEFAULT_PADDLE_MOVE (DEFAULT_PADDLE_LENGTH) / 2
 #define BRICKS_PER_LINE 10 /*Ten bricks per line of text*/
 #define BRICK_LINE_COUNT 4  /*Four lines of bricks.*/
+#define BALL_X_SPEEDMULTIPLIER (COLS / 80)
+#define BALL_Y_SPEEDMULTIPLIER (LINES / 24)
 
 typedef signed char Bool;
 
-typedef enum { LEFT, RIGHT } DirectionX;
-typedef enum { DOWN, UP } DirectionY;
+typedef enum { LEFT, RIGHT, X_NEUTRAL } DirectionX;
+typedef enum { DOWN, UP, Y_NEUTRAL } DirectionY;
 
 struct BALL
 {

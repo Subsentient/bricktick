@@ -82,11 +82,13 @@ MainLoop:
 		{ /*We hit the ceiling.*/
 			BounceBallY(&Ball, DOWN);
 		}
-		else if (Ball.Y == LINES - 2)
+		else if (Ball.Y >= LINES - 2)
 		{ /*More happens when we hit the floor.*/
 			if (!CheckBallHitPaddle(&Ball, &Paddle))
-			{ 
-				MoveBall(&Ball);
+			{
+				DeleteBall(&Ball);
+				Ball.Y = LINES - 1;
+				DrawBall(&Ball);
 				
 				if (Lives == 1)
 				{
@@ -108,8 +110,11 @@ MainLoop:
 					fflush(NULL);
 					sleep(2);
 					DeleteBall(&Ball);
+					DeletePaddle(&Paddle);
 					DeleteMessage();
 					ResetBall(&Ball);
+					ResetPaddle(&Paddle);
+					DrawPaddle(&Paddle);
 					DrawBall(&Ball);
 				}
 			}
@@ -118,9 +123,10 @@ MainLoop:
 				BounceBallY(&Ball, UP);
 				
 				if (PaddleMovedLastTick)
-				{
+				{ /*We can "whack" the ball with our paddle.*/
 					Ball.DirX = PaddleMoveDir;
 				}
+					
 			}
 		}
 		PaddleMovedLastTick = false;

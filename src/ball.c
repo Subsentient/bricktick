@@ -15,6 +15,12 @@ void BounceBallX(struct BALL *const Ball, DirectionX Direction)
 
 void BounceBallY(struct BALL *const Ball, DirectionY Direction)
 {
+	/*Don't let us keep bouncing in a loop forever up and down.*/
+	if (Direction == DOWN && Ball->DirX == X_NEUTRAL)
+	{
+		Ball->DirX = rand() & 1;
+	}
+	
 	Ball->DirY = Direction;
 }
 	
@@ -22,9 +28,8 @@ void ResetBall(struct BALL *Ball)
 {
 	Ball->X = COLS / 2;
 	Ball->Y = LINES / 2;
-	Ball->DirX = LEFT;
-	Ball->DirY = UP;
-	
+	Ball->DirX = X_NEUTRAL;
+	Ball->DirY = DOWN;
 }
 
 Bool CheckBallHitPaddle(struct BALL *Ball, struct PADDLE *Paddle)
@@ -60,10 +65,24 @@ void MoveBall(struct BALL *Ball)
 	switch (Ball->DirX)
 	{
 		case RIGHT:
-			++Ball->X;
+			if (Ball->X + BALL_X_SPEEDMULTIPLIER <= COLS - 1)
+			{
+				Ball->X += BALL_X_SPEEDMULTIPLIER;
+			}
+			else
+			{
+				Ball->X = COLS - 1;
+			}
 			break;
 		case LEFT:
-			--Ball->X;
+			if (Ball->X - BALL_X_SPEEDMULTIPLIER >= 0)
+			{
+				Ball->X -= BALL_X_SPEEDMULTIPLIER;
+			}
+			else
+			{
+				Ball->X = 0;
+			}
 			break;
 		default:
 			break;
@@ -73,10 +92,24 @@ void MoveBall(struct BALL *Ball)
 	switch (Ball->DirY)
 	{
 		case DOWN:
-			++Ball->Y;
+			if (Ball->Y + BALL_Y_SPEEDMULTIPLIER < LINES - 1)
+			{
+				Ball->Y += BALL_Y_SPEEDMULTIPLIER;
+			}
+			else
+			{
+				Ball->Y = LINES - 2;
+			}	
 			break;
 		case UP:
-			--Ball->Y;
+			if (Ball->Y - BALL_Y_SPEEDMULTIPLIER > 0)
+			{
+				Ball->Y -= BALL_Y_SPEEDMULTIPLIER;
+			}
+			else
+			{
+				Ball->Y = 1;
+			}
 			break;
 		default:
 			break;
