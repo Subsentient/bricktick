@@ -13,6 +13,7 @@
 
 int Lives = 3;
 unsigned long Score = 0;
+Bool UseColor = true;
 
 int main(int argc, char **argv)
 {
@@ -22,6 +23,21 @@ int main(int argc, char **argv)
 	int SecTick = 0;
 	Bool PaddleMovedLastTick;
 	DirectionX PaddleMoveDir;
+	int Inc = 1;
+	
+	for (; Inc < argc; ++Inc)
+	{
+		if (!strcmp("--nocolor", argv[Inc]))
+		{
+			UseColor = false;
+		}
+		else
+		{
+			fprintf(stderr, "Bad command line argument \"%s\".\n", argv[Inc]);
+			exit(1);
+		}
+	}
+	
 	
 	initscr();
 	
@@ -33,10 +49,10 @@ int main(int argc, char **argv)
 		
 	}
 	
-	if (!has_colors())
+	if (!has_colors() && UseColor)
 	{
 		endwin();
-		fprintf(stderr, "Bricktick requires color.\n");
+		fprintf(stderr, "Color is not supported. Pass --nocolor to play without it.\n");
 		exit(1);
 	}
 	
@@ -46,16 +62,23 @@ int main(int argc, char **argv)
 	set_escdelay(25);
 	curs_set(0);
 	
-	start_color();
-	init_pair(1, COLOR_CYAN, COLOR_BLACK);
-	init_pair(2, COLOR_GREEN, COLOR_BLACK);
-	init_pair(3, COLOR_BLACK, COLOR_WHITE);
+	if (UseColor)
+	{
+		start_color();
+		init_pair(1, COLOR_CYAN, COLOR_BLACK);
+		init_pair(2, COLOR_GREEN, COLOR_BLACK);
+		init_pair(3, COLOR_BLACK, COLOR_WHITE);
+	}
 	
 	
 	/*Show our initial lives count.*/
 	DrawLives(Lives);
 	DrawScore(Score);
-	attrset(COLOR_PAIR(1));
+	
+	if (UseColor)
+	{
+		attrset(COLOR_PAIR(1));
+	}
 
 	refresh();
 
@@ -73,7 +96,7 @@ MainLoop:
 		if (SecTick == 10)
 		{ /*We get score every second for just surviving.*/
 			DrawScore((Score += 2));
-			attrset(COLOR_PAIR(1));
+			if (UseColor) attrset(COLOR_PAIR(1));
 			SecTick = 0;
 		}
 		++SecTick;
@@ -103,7 +126,7 @@ MainLoop:
 					DrawLives(--Lives);
 					
 					 /*Fix wonky colors after DrawLives() that I'm certain are arising simply from misuse of ncurses.*/
-					attrset(COLOR_PAIR(1));
+					if (UseColor) attrset(COLOR_PAIR(1));
 					
 					DrawMessage("Ready?");
 					refresh();
@@ -204,9 +227,9 @@ void DeleteMessage(void)
 void DrawLives(int Lives)
 {
 	move(0, 2);
-	attron(COLOR_PAIR(3));
+	if (UseColor) attron(COLOR_PAIR(3));
 	printw("Lives: %d", Lives);
-	attroff(COLOR_PAIR(3));
+	if (UseColor)attroff(COLOR_PAIR(3));
 	refresh();
 }
 
@@ -216,9 +239,9 @@ void DrawScore(unsigned long Score)
 	snprintf(ScoreMSG, sizeof ScoreMSG, "Score: %lu", Score);
 	
 	move(0, COLS - 1 - strlen(ScoreMSG) - 2);
-	attron(COLOR_PAIR(3));
+	if (UseColor) attron(COLOR_PAIR(3));
 	addstr(ScoreMSG);
-	attroff(COLOR_PAIR(3));
+	if (UseColor) attroff(COLOR_PAIR(3));
 	refresh();
 }
 

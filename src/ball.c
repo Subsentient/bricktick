@@ -43,7 +43,8 @@ void DrawBall(struct BALL *Ball)
 {
 	move(Ball->Y, Ball->X);
 	attron(A_BOLD);
-	addch('*' | COLOR_PAIR(2));
+	if (UseColor) addch('*' | COLOR_PAIR(2));
+	else addch('*');
 	attroff(A_BOLD);
 	refresh();
 }

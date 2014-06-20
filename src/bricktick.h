@@ -59,4 +59,4 @@ extern void DrawScore(unsigned long Score);
 /*Globals*/
 extern int Lives;
 extern unsigned long Score;
-
+extern Bool UseColor;
