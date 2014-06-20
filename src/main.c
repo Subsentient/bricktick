@@ -74,11 +74,6 @@ int main(int argc, char **argv)
 	/*Show our initial lives count.*/
 	DrawLives(Lives);
 	DrawScore(Score);
-	
-	if (UseColor)
-	{
-		attrset(COLOR_PAIR(1));
-	}
 
 	refresh();
 
@@ -90,13 +85,15 @@ int main(int argc, char **argv)
 	DrawBall(&Ball);
 	DrawPaddle(&Paddle);
 	
+	/*Wait for L key.*/
+	WaitForUserLaunch();
+	
 MainLoop:
 	while ((Key = getch()) != 27) /*27 is ESC*/
 	{
 		if (SecTick == 10)
 		{ /*We get score every second for just surviving.*/
 			DrawScore((Score += 2));
-			if (UseColor) attrset(COLOR_PAIR(1));
 			SecTick = 0;
 		}
 		++SecTick;
@@ -115,28 +112,45 @@ MainLoop:
 				
 				if (Lives == 1)
 				{
-					DrawMessage("GAME OVER -- Press ESC to exit.");
+					DrawLives(0);
+					
+					Lives = 3;
+					Score = 0;
+					DrawMessage("GAME OVER -- Press ESC to exit or any key to play again");
 					cbreak();
-					while (getch() != 27); /*ESC*/
-					endwin();
-					exit(0);
+					if (getch() == 27)
+					{
+						endwin();
+						exit(0);
+					}
+					halfdelay(1);
+					DeleteMessage();
+					/*Assume they want to play again.*/
+					WaitForUserLaunch();
+					
+					DeleteBall(&Ball);
+					DeletePaddle(&Paddle);
+					
+					ResetBall(&Ball);
+					ResetPaddle(&Paddle);
+					
+					DrawPaddle(&Paddle);
+					DrawBall(&Ball);
+					
+					DrawLives(Lives);
 				}
 				else
 				{
 					DrawLives(--Lives);
 					
-					 /*Fix wonky colors after DrawLives() that I'm certain are arising simply from misuse of ncurses.*/
-					if (UseColor) attrset(COLOR_PAIR(1));
-					
-					DrawMessage("Ready?");
-					refresh();
-					fflush(NULL);
-					sleep(2);
+					WaitForUserLaunch();
+							
 					DeleteBall(&Ball);
 					DeletePaddle(&Paddle);
-					DeleteMessage();
+					
 					ResetBall(&Ball);
 					ResetPaddle(&Paddle);
+					
 					DrawPaddle(&Paddle);
 					DrawBall(&Ball);
 				}
@@ -244,7 +258,14 @@ void DrawLives(int Lives)
 	move(0, 2);
 	if (UseColor) attron(COLOR_PAIR(3));
 	printw("Lives: %d", Lives);
-	if (UseColor)attroff(COLOR_PAIR(3));
+	
+	if (UseColor)
+	{
+		/*For us.*/
+		attroff(COLOR_PAIR(3));
+		/*For everyone else.*/
+		attrset(COLOR_PAIR(1));
+	}
 	refresh();
 }
 
@@ -256,7 +277,31 @@ void DrawScore(unsigned long Score)
 	move(0, COLS - 1 - strlen(ScoreMSG) - 2);
 	if (UseColor) attron(COLOR_PAIR(3));
 	addstr(ScoreMSG);
-	if (UseColor) attroff(COLOR_PAIR(3));
+
+	if (UseColor)
+	{
+		/*For us.*/
+		attroff(COLOR_PAIR(3));
+		/*For everyone else.*/
+		attrset(COLOR_PAIR(1));
+	}
 	refresh();
 }
 
+void WaitForUserLaunch(void)
+{
+	int Key;
+	
+	DrawMessage("Hit L to launch.");
+	
+	while ((Key = getch()) != 'l' && Key != 'L' && Key != 27);
+	
+	DeleteMessage();
+	
+	if (Key == 27) /*ESC*/
+	{
+		endwin();
+		exit(0);
+	}
+
+}

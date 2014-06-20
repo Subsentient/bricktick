@@ -55,6 +55,7 @@ extern void DrawMessage(const char *const Message);
 extern void DeleteMessage(void);
 extern void DrawLives(int Lives);
 extern void DrawScore(unsigned long Score);
+extern void WaitForUserLaunch(void);
 
 /*Globals*/
 extern int Lives;
