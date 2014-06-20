@@ -7,7 +7,6 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
 #include <unistd.h>
 #include "bricktick.h"
@@ -20,8 +19,9 @@ int main(int argc, char **argv)
 	struct BALL Ball = { 0 };
 	struct PADDLE Paddle = { 0 };
 	int Key = 0;
-	time_t LastRand = 0, Rand = 0;
 	int SecTick = 0;
+	Bool PaddleMovedLastTick;
+	DirectionX PaddleMoveDir;
 	
 	initscr();
 	
@@ -77,12 +77,6 @@ MainLoop:
 			SecTick = 0;
 		}
 		++SecTick;
-		
-		if ((Rand = time(NULL)) != LastRand)
-		{
-			srand(Rand);
-			LastRand = Rand;
-		}
 
 		if (Ball.Y == 1)
 		{ /*We hit the ceiling.*/
@@ -122,9 +116,14 @@ MainLoop:
 			else
 			{
 				BounceBallY(&Ball, UP);
+				
+				if (PaddleMovedLastTick)
+				{
+					Ball.DirX = PaddleMoveDir;
+				}
 			}
 		}
-		
+		PaddleMovedLastTick = false;
 		/*Bounce off left and right walls.*/
 		if (Ball.X == COLS - 1) BounceBallX(&Ball, LEFT);
 		else if (Ball.X == 0) BounceBallX(&Ball, RIGHT);
@@ -133,9 +132,13 @@ MainLoop:
 		{ /*Paddle movement.*/
 			case KEY_LEFT:
 				MovePaddle(&Paddle, LEFT);
+				PaddleMovedLastTick = true;
+				PaddleMoveDir = LEFT;
 				break;
 			case KEY_RIGHT:
 				MovePaddle(&Paddle, RIGHT);
+				PaddleMovedLastTick = true;
+				PaddleMoveDir = RIGHT;
 				break;
 			case ' ':
 				DrawMessage("PAUSED");

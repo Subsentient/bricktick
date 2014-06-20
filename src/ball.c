@@ -16,7 +16,6 @@ void BounceBallX(struct BALL *const Ball, DirectionX Direction)
 void BounceBallY(struct BALL *const Ball, DirectionY Direction)
 {
 	Ball->DirY = Direction;
-	Ball->DirX = rand() & 1;
 }
 	
 void ResetBall(struct BALL *Ball)
