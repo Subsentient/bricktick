@@ -48,7 +48,7 @@ extern void BounceBallX(struct BALL *const Ball, DirectionX Direction);
 extern void DrawPaddle(struct PADDLE *Paddle);
 extern void ResetPaddle(struct PADDLE *Paddle);
 extern void DeletePaddle(struct PADDLE *Paddle);
-extern Bool MovePaddle(struct PADDLE *Paddle, DirectionX Direction);
+extern void MovePaddle(struct PADDLE *Paddle, DirectionX Direction);
 extern Bool CheckBallHitPaddle(struct BALL *Ball, struct PADDLE *Paddle);
 
 extern void DrawMessage(const char *const Message);

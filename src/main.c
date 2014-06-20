@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 #include "bricktick.h"
 
 int Lives = 3;
@@ -24,6 +25,7 @@ int main(int argc, char **argv)
 	Bool PaddleMovedLastTick;
 	DirectionX PaddleMoveDir;
 	int Inc = 1;
+	time_t Rand = 0, LastRand = 0;
 	
 	for (; Inc < argc; ++Inc)
 	{
@@ -91,6 +93,14 @@ int main(int argc, char **argv)
 MainLoop:
 	while ((Key = getch()) != 27) /*27 is ESC*/
 	{
+		
+		/*Set up the number generator.*/
+		if ((Rand = time(NULL)) != LastRand)
+		{
+			srand(Rand);
+			LastRand = Rand;
+		}
+		
 		if (SecTick == 10)
 		{ /*We get score every second for just surviving.*/
 			DrawScore((Score += 2));
@@ -172,7 +182,9 @@ MainLoop:
 					}
 					else if (Ball.X  > Paddle.X + PADDLE_THIRD && Ball.X <= Paddle.X + (PADDLE_THIRD * 2))
 					{
-						Ball.DirX = X_NEUTRAL;
+						/*Make whether we hit up or not as a chance.*/
+						Bool StraightUp = rand() & 1;
+						if (StraightUp) Ball.DirX = X_NEUTRAL;
 					}
 					else
 					{

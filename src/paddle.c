@@ -40,24 +40,20 @@ void DeletePaddle(struct PADDLE *Paddle)
 	refresh();
 }
 
-Bool MovePaddle(struct PADDLE *Paddle, DirectionX Direction)
+void MovePaddle(struct PADDLE *Paddle, DirectionX Direction)
 {
-	Bool RetVal = true;
-	
 	DeletePaddle(Paddle);
 
 	if (Direction == LEFT)
 	{
 		if (DEFAULT_PADDLE_MOVE <= Paddle->X) Paddle->X -= DEFAULT_PADDLE_MOVE;
-		else RetVal = false;
+		else Paddle->X = 0;
 	}
 	else
 	{
 		if (COLS - Paddle->X - Paddle->Length >= DEFAULT_PADDLE_MOVE) Paddle->X += DEFAULT_PADDLE_MOVE;
-		else RetVal = false;
+		else Paddle->X = COLS  - Paddle->Length;
 	}
 	
 	DrawPaddle(Paddle);
-	
-	return RetVal;
 }
