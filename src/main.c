@@ -149,7 +149,22 @@ MainLoop:
 				{ /*We can "whack" the ball with our paddle.*/
 					Ball.DirX = PaddleMoveDir;
 				}
-					
+				else
+				{ /*We cut the paddle into thirds for the X direction after bounce.*/
+#define PADDLE_THIRD (Paddle.Length / 3)
+					if (Ball.X <= Paddle.X + PADDLE_THIRD)
+					{
+						Ball.DirX = LEFT;
+					}
+					else if (Ball.X  > Paddle.X + PADDLE_THIRD && Ball.X <= Paddle.X + (PADDLE_THIRD * 2))
+					{
+						Ball.DirX = X_NEUTRAL;
+					}
+					else
+					{
+						Ball.DirX = RIGHT;
+					}
+				}
 			}
 		}
 		PaddleMovedLastTick = false;
