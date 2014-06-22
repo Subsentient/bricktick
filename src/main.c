@@ -25,7 +25,6 @@ int main(int argc, char **argv)
 	Bool PaddleMovedLastTick;
 	DirectionX PaddleMoveDir;
 	int Inc = 1;
-	time_t Rand = 0, LastRand = 0;
 	
 	for (; Inc < argc; ++Inc)
 	{
@@ -90,17 +89,11 @@ int main(int argc, char **argv)
 	/*Wait for L key.*/
 	WaitForUserLaunch();
 	
+	/*Set up the number generator.*/
+	srand(time(NULL));
 MainLoop:
 	while ((Key = getch()) != 27) /*27 is ESC*/
-	{
-		
-		/*Set up the number generator.*/
-		if ((Rand = time(NULL)) != LastRand)
-		{
-			srand(Rand);
-			LastRand = Rand;
-		}
-		
+	{		
 		if (SecTick == 10)
 		{ /*We get score every second for just surviving.*/
 			DrawScore((Score += 2));
