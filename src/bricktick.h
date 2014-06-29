@@ -7,8 +7,8 @@
 #define true 1
 #define false 0
 
-#define DEFAULT_PADDLE_LENGTH COLS / 10
-#define DEFAULT_PADDLE_MOVE (DEFAULT_PADDLE_LENGTH) / 2
+#define DEFAULT_PADDLE_LENGTH (COLS / 10) /*How long the paddle is.*/
+#define DEFAULT_PADDLE_MOVE (DEFAULT_PADDLE_LENGTH / 2)
 #define BRICKS_PER_LINE 10 /*Ten bricks per line of text*/
 #define BRICK_LINE_COUNT 4  /*Four lines of bricks.*/
 #define BALL_X_SPEEDMULTIPLIER (COLS / 80)
@@ -35,6 +35,8 @@ struct PADDLE
 struct BRICK
 {
 	int X1, X2, Y;
+	unsigned int Show : 1;
+	unsigned int CF : 1; /*Zero, we are green, one, we are blue.*/
 };
 
 /*Functions.*/
@@ -57,7 +59,10 @@ extern void DrawLives(int Lives);
 extern void DrawScore(unsigned long Score);
 extern void WaitForUserLaunch(void);
 
+void DrawBrick(struct BRICK *Brick);
+
 /*Globals*/
 extern int Lives;
 extern unsigned long Score;
 extern Bool UseColor;
+extern struct BRICK Bricks[BRICK_LINE_COUNT][BRICKS_PER_LINE];

@@ -69,6 +69,7 @@ int main(int argc, char **argv)
 		init_pair(1, COLOR_CYAN, COLOR_BLACK);
 		init_pair(2, COLOR_GREEN, COLOR_BLACK);
 		init_pair(3, COLOR_BLACK, COLOR_WHITE);
+		init_pair(4, COLOR_BLUE, COLOR_BLACK);
 	}
 	
 	
@@ -85,7 +86,8 @@ int main(int argc, char **argv)
 	
 	DrawBall(&Ball);
 	DrawPaddle(&Paddle);
-	
+	InitBricks();
+	DrawAllBricks();
 	/*Wait for L key.*/
 	WaitForUserLaunch();
 	
