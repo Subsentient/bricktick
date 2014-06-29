@@ -35,8 +35,15 @@ struct PADDLE
 struct BRICK
 {
 	int X1, X2, Y;
-	unsigned int Show : 1;
+	unsigned int Visible : 1;
 	unsigned int CF : 1; /*Zero, we are green, one, we are blue.*/
+};
+
+struct BRICKSTRIKE
+{
+	enum StrikeV { STRIKE_VNONE, STRIKE_BOTTOM, STRIKE_TOP } StrikeV;
+	enum StrikeH { STRIKE_HNONE, STRIKE_LEFT, STRIKE_RIGHT } StrikeH;
+	struct BRICK *Brick;
 };
 
 /*Functions.*/
@@ -59,7 +66,12 @@ extern void DrawLives(int Lives);
 extern void DrawScore(unsigned long Score);
 extern void WaitForUserLaunch(void);
 
-void DrawBrick(struct BRICK *Brick);
+extern void DrawBrick(struct BRICK *Brick);
+extern Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const Strike);
+extern void InitBricks(void);
+extern void DrawAllBricks(void);
+extern void DeleteAllBricks(void);
+extern void DeleteBrick(struct BRICK *Brick);
 
 /*Globals*/
 extern int Lives;

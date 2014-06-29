@@ -15,7 +15,7 @@ void DrawBrick(struct BRICK *Brick)
 	int Inc = 0;
 	int Color = UseColor ? COLOR_PAIR(Brick->CF ? 4 : 2) : 0;
 	
-	if (!Brick->Show) return;
+	if (!Brick->Visible) return;
 	
 	move(Brick->Y, Brick->X1);
 	
@@ -28,7 +28,12 @@ void DrawBrick(struct BRICK *Brick)
 	}
 	addch(']');
 	
-	if (UseColor) attroff(Color);
+	if (UseColor)
+	{
+		attroff(Color);
+		attrset(COLOR_PAIR(1)); /*Set it back for everything else so it doesn't muck up.*/
+	}
+	
 	refresh();
 }
 
@@ -42,7 +47,7 @@ void InitBricks(void)
 	struct BRICK *B2 = NULL;
 	
 	/*Don't let us run off the screen.*/
-	for (; Width * 10 > COLS - 1; --Width);
+	for (; Width * 10 > COLS; --Width);
 	
 	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
 	{
@@ -56,7 +61,7 @@ void InitBricks(void)
 			B2->X1 = CWidth;
 			B2->X2 = B2->X1 + Width;
 			B2->Y = StartY + Inc1;
-			B2->Show = true;
+			B2->Visible = true;
 		}
 		Flip = !Flip; /*Alternate colors.*/
 	}
@@ -70,7 +75,96 @@ void DrawAllBricks(void)
 	{
 		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
 		{
-			DrawBrick(&Bricks[Inc1][Inc2]);
+			if (Bricks[Inc1][Inc2].Visible)
+			{
+				DrawBrick(&Bricks[Inc1][Inc2]);
+			}
 		}
 	}
 }
+
+void DeleteBrick(struct BRICK *Brick)
+{
+	const int Length = Brick->X2 - Brick->X1;
+	int Inc = 0;
+	
+	move(Brick->Y, Brick->X1);
+	
+	attron(A_NORMAL);
+	
+	for (; Inc < Length; ++Inc)
+	{
+		addch(' ');
+	}
+	
+	attroff(A_NORMAL);
+	
+	attrset(COLOR_PAIR(1));
+	
+	Brick->Visible = false;
+}
+	
+void DeleteAllBricks(void)
+{
+	int Inc1 = 0, Inc2 = 0;
+	
+	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	{
+		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		{
+			DeleteBrick(&Bricks[Inc1][Inc2]);
+		}
+	}
+}
+
+Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const Strike)
+{
+	int Inc1 = 0, Inc2 = 0;
+	
+	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	{
+		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		{
+			if (Bricks[Inc1][Inc2].Visible &&
+				Ball->X >= Bricks[Inc1][Inc2].X1 - 1 && Ball->X <= Bricks[Inc1][Inc2].X2 + 1 &&
+				Ball->Y <= Bricks[Inc1][Inc2].Y + 1 && Ball->Y >= Bricks[Inc1][Inc2].Y - 1)
+			{
+				/*Process the different vertical directions first.*/
+				if (Ball->Y == Bricks[Inc1][Inc2].Y - 1) /*Struck the top of the brick.*/
+				{
+					Strike->StrikeV = STRIKE_TOP;
+				}
+				else if (Ball->Y == Bricks[Inc1][Inc2].Y + 1) /*Struck the bottom of the brick.*/
+				{
+					Strike->StrikeV  = STRIKE_BOTTOM;
+				}
+				else
+				{
+					Strike->StrikeV = STRIKE_VNONE;
+				}
+				
+				/*Process the different horizontal directions now.*/
+				if (Ball->X == Bricks[Inc1][Inc2].X1 - 1) /*Struck the left side of the brick.*/
+				{
+					Strike->StrikeH = STRIKE_LEFT;
+				}
+				else if (Ball->X == Bricks[Inc1][Inc2].X2 + 1)
+				{
+					Strike->StrikeH = STRIKE_RIGHT;
+				}
+				else
+				{
+					Strike->StrikeH = STRIKE_HNONE;
+				}
+				
+				Strike->Brick = &Bricks[Inc1][Inc2];
+				
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+

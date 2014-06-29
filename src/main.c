@@ -24,6 +24,8 @@ int main(int argc, char **argv)
 	int SecTick = 0;
 	Bool PaddleMovedLastTick;
 	DirectionX PaddleMoveDir;
+	struct BRICKSTRIKE Strike;
+	
 	int Inc = 1;
 	
 	for (; Inc < argc; ++Inc)
@@ -190,8 +192,56 @@ MainLoop:
 		}
 		PaddleMovedLastTick = false;
 		/*Bounce off left and right walls.*/
-		if (Ball.X == COLS - 1) BounceBallX(&Ball, LEFT);
-		else if (Ball.X == 0) BounceBallX(&Ball, RIGHT);
+		if (Ball.X >= COLS - 1)
+		{
+			Ball.X = COLS - 1;
+			BounceBallX(&Ball, LEFT);
+		}
+		else if (Ball.X <= 0)
+		{
+			Ball.X = 0;
+			BounceBallX(&Ball, RIGHT);
+		}
+			
+	
+		/*We hit a brick.*/
+		if (BallStruckBrick(&Ball, &Strike))
+		{
+			switch (Strike.StrikeV)
+			{
+				case STRIKE_TOP:
+					Ball.DirY = UP;
+					break;
+				case STRIKE_BOTTOM:
+					Ball.DirY = DOWN;
+					break;
+				default:
+					break;
+			}
+			
+			switch (Strike.StrikeH)
+			{
+				case STRIKE_LEFT:
+					Ball.DirX = LEFT;
+					break;
+				case STRIKE_RIGHT:
+					Ball.DirX = RIGHT;
+					break;
+				default:
+				{
+					if (Ball.DirX != X_NEUTRAL) break;
+					else
+					{
+						Bool Dir = rand() & 1;
+						Ball.DirX = Dir;
+					}
+					break;
+				}
+			}
+			
+			DeleteBrick(Strike.Brick);
+			DrawScore((Score += 100));
+		}
 		
 		switch (Key)
 		{ /*Paddle movement.*/
