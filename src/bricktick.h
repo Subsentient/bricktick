@@ -68,10 +68,11 @@ extern void WaitForUserLaunch(void);
 
 extern void DrawBrick(struct BRICK *Brick);
 extern Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const Strike);
-extern void InitBricks(void);
+extern void ResetBricks(void);
 extern void DrawAllBricks(void);
 extern void DeleteAllBricks(void);
 extern void DeleteBrick(struct BRICK *Brick);
+extern int BricksLeft(void);
 
 /*Globals*/
 extern int Lives;

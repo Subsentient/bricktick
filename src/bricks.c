@@ -37,7 +37,7 @@ void DrawBrick(struct BRICK *Brick)
 	refresh();
 }
 
-void InitBricks(void)
+void ResetBricks(void)
 { /*Set up parameters for every brick.*/
 	int Width = COLS / BRICKS_PER_LINE;
 	const int StartY = 4;
@@ -102,6 +102,7 @@ void DeleteBrick(struct BRICK *Brick)
 	attrset(COLOR_PAIR(1));
 	
 	Brick->Visible = false;
+	refresh();
 }
 	
 void DeleteAllBricks(void)
@@ -116,6 +117,23 @@ void DeleteAllBricks(void)
 		}
 	}
 }
+
+int BricksLeft(void)
+{
+	int Inc1 = 0, Inc2 = 0;
+	int BrickCount = 0;
+	
+	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	{
+		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		{
+			if (Bricks[Inc1][Inc2].Visible) ++BrickCount;
+		}
+	}
+	
+	return BrickCount;
+}
+
 
 Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const Strike)
 {

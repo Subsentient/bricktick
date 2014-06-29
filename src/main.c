@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 	
 	DrawBall(&Ball);
 	DrawPaddle(&Paddle);
-	InitBricks();
+	ResetBricks();
 	DrawAllBricks();
 	/*Wait for L key.*/
 	WaitForUserLaunch();
@@ -132,19 +132,23 @@ MainLoop:
 					}
 					halfdelay(1);
 					DeleteMessage();
-					/*Assume they want to play again.*/
-					WaitForUserLaunch();
 					
 					DeleteBall(&Ball);
 					DeletePaddle(&Paddle);
+					DeleteAllBricks();
 					
-					ResetBall(&Ball);
 					ResetPaddle(&Paddle);
+					ResetBricks();
 					
 					DrawPaddle(&Paddle);
-					DrawBall(&Ball);
+					DrawAllBricks();
 					
 					DrawLives(Lives);
+					
+					/*Assume they want to play again.*/
+					WaitForUserLaunch();
+					ResetBall(&Ball);
+					DrawBall(&Ball);
 				}
 				else
 				{
@@ -160,6 +164,9 @@ MainLoop:
 					
 					DrawPaddle(&Paddle);
 					DrawBall(&Ball);
+					
+					/*Redraw but don't reset.*/
+					DrawAllBricks();
 				}
 			}
 			else
@@ -233,7 +240,7 @@ MainLoop:
 					else
 					{
 						Bool Dir = rand() & 1;
-						Ball.DirX = Dir;
+						Ball.DirX = (DirectionX)Dir;
 					}
 					break;
 				}
