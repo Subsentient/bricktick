@@ -39,7 +39,7 @@ void DrawBrick(struct BRICK *Brick)
 
 void InitBricks(void)
 { /*Set up parameters for every brick.*/
-	int Width = COLS / 10;
+	int Width = COLS / BRICKS_PER_LINE;
 	const int StartY = 4;
 	int CWidth = 0;
 	int Inc1 = 0, Inc2 = 0;
@@ -47,7 +47,7 @@ void InitBricks(void)
 	struct BRICK *B2 = NULL;
 	
 	/*Don't let us run off the screen.*/
-	for (; Width * 10 > COLS; --Width);
+	for (; Width * BRICKS_PER_LINE > COLS; --Width);
 	
 	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
 	{
