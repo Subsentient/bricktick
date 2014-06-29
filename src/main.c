@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 	
 	initscr();
 	
-	if (COLS < 80 || LINES < 24)
+	if (BRICKTICK_MAX_X < 80 || BRICKTICK_MAX_Y < 24)
 	{
 		endwin();
 		fprintf(stderr, "Please use a console with a resolution of at least 80x24.\n");
@@ -109,12 +109,12 @@ MainLoop:
 		{ /*We hit the ceiling.*/
 			BounceBallY(&Ball, DOWN);
 		}
-		else if (Ball.Y >= LINES - 2)
+		else if (Ball.Y >= BRICKTICK_MAX_Y - 2)
 		{ /*More happens when we hit the floor.*/
 			if (!CheckBallHitPaddle(&Ball, &Paddle))
 			{
 				DeleteBall(&Ball);
-				Ball.Y = LINES - 1;
+				Ball.Y = BRICKTICK_MAX_Y - 1;
 				DrawBall(&Ball);
 				
 				if (Lives == 1)
@@ -199,9 +199,9 @@ MainLoop:
 		}
 		PaddleMovedLastTick = false;
 		/*Bounce off left and right walls.*/
-		if (Ball.X >= COLS - 1)
+		if (Ball.X >= BRICKTICK_MAX_X - 1)
 		{
-			Ball.X = COLS - 1;
+			Ball.X = BRICKTICK_MAX_X - 1;
 			BounceBallX(&Ball, LEFT);
 		}
 		else if (Ball.X <= 0)
@@ -300,7 +300,7 @@ MainLoop:
 
 void DrawMessage(const char *const Message)
 {
-	move(LINES / 2, (COLS - strlen(Message)) / 2);
+	move(BRICKTICK_MAX_Y / 2, (BRICKTICK_MAX_X - strlen(Message)) / 2);
 	addstr(Message);
 	refresh();
 }
@@ -308,9 +308,9 @@ void DrawMessage(const char *const Message)
 void DeleteMessage(void)
 {
 	int Inc = 0;
-	move(LINES / 2, 0);
+	move(BRICKTICK_MAX_Y / 2, 0);
 	
-	for (; Inc < COLS - 1; ++Inc)
+	for (; Inc < BRICKTICK_MAX_X - 1; ++Inc)
 	{
 		addch(' ');
 	}
@@ -338,7 +338,7 @@ void DrawScore(unsigned long Score)
 	char ScoreMSG[128];
 	snprintf(ScoreMSG, sizeof ScoreMSG, "Score: %lu", Score);
 	
-	move(0, COLS - 1 - strlen(ScoreMSG) - 2);
+	move(0, BRICKTICK_MAX_X - 1 - strlen(ScoreMSG) - 2);
 	if (UseColor) attron(COLOR_PAIR(3));
 	addstr(ScoreMSG);
 

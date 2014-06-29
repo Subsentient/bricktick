@@ -10,14 +10,14 @@
 void ResetPaddle(struct PADDLE *Paddle)
 {
 	Paddle->Length = DEFAULT_PADDLE_LENGTH;
-	Paddle->X = (COLS - Paddle->Length) / 2;
+	Paddle->X = (BRICKTICK_MAX_X - Paddle->Length) / 2;
 }
 
 void DrawPaddle(struct PADDLE *Paddle)
 {
 	int Inc = 0;
 	
-	move(LINES - 1, Paddle->X);
+	move(BRICKTICK_MAX_Y - 1, Paddle->X);
 
 	addch('<' | A_BOLD);
 	for (; Inc < Paddle->Length - 2; ++Inc)
@@ -31,7 +31,7 @@ void DrawPaddle(struct PADDLE *Paddle)
 void DeletePaddle(struct PADDLE *Paddle)
 {
 	int Inc = 0;
-	move(LINES - 1, Paddle->X);
+	move(BRICKTICK_MAX_Y - 1, Paddle->X);
 	
 	for (; Inc < Paddle->Length; ++Inc)
 	{
@@ -51,8 +51,8 @@ void MovePaddle(struct PADDLE *Paddle, DirectionX Direction)
 	}
 	else
 	{
-		if (COLS - Paddle->X - Paddle->Length >= DEFAULT_PADDLE_MOVE) Paddle->X += DEFAULT_PADDLE_MOVE;
-		else Paddle->X = COLS  - Paddle->Length;
+		if (BRICKTICK_MAX_X - Paddle->X - Paddle->Length >= DEFAULT_PADDLE_MOVE) Paddle->X += DEFAULT_PADDLE_MOVE;
+		else Paddle->X = BRICKTICK_MAX_X  - Paddle->Length;
 	}
 	
 	DrawPaddle(Paddle);

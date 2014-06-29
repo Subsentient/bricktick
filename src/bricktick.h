@@ -7,12 +7,12 @@
 #define true 1
 #define false 0
 
-#define DEFAULT_PADDLE_LENGTH (COLS / 10) /*How long the paddle is.*/
+#define DEFAULT_PADDLE_LENGTH (BRICKTICK_MAX_X / 10) /*How long the paddle is.*/
 #define DEFAULT_PADDLE_MOVE (DEFAULT_PADDLE_LENGTH / 2)
 #define BRICKS_PER_LINE 20 /*Ten bricks per line of text*/
 #define BRICK_LINE_COUNT 7  /*Four lines of bricks.*/
-#define BALL_X_SPEEDMULTIPLIER (COLS / 80)
-#define BALL_Y_SPEEDMULTIPLIER (LINES / 24)
+#define BRICKTICK_MAX_X 80
+#define BRICKTICK_MAX_Y 24
 
 typedef signed char Bool;
 

@@ -26,8 +26,8 @@ void BounceBallY(struct BALL *const Ball, DirectionY Direction)
 	
 void ResetBall(struct BALL *Ball)
 {
-	Ball->X = COLS / 2;
-	Ball->Y = LINES / 2;
+	Ball->X = BRICKTICK_MAX_X / 2;
+	Ball->Y = BRICKTICK_MAX_Y / 2;
 	Ball->DirX = X_NEUTRAL;
 	Ball->DirY = DOWN;
 }
@@ -66,19 +66,19 @@ void MoveBall(struct BALL *Ball)
 	switch (Ball->DirX)
 	{
 		case RIGHT:
-			if (Ball->X + BALL_X_SPEEDMULTIPLIER <= COLS - 1)
+			if (Ball->X + 1 <= BRICKTICK_MAX_X - 1)
 			{
-				Ball->X += BALL_X_SPEEDMULTIPLIER;
+				++Ball->X;
 			}
 			else
 			{
-				Ball->X = COLS - 1;
+				Ball->X = BRICKTICK_MAX_X - 1;
 			}
 			break;
 		case LEFT:
-			if (Ball->X - BALL_X_SPEEDMULTIPLIER >= 0)
+			if (Ball->X - 1 >= 0)
 			{
-				Ball->X -= BALL_X_SPEEDMULTIPLIER;
+				--Ball->X;
 			}
 			else
 			{
@@ -93,19 +93,19 @@ void MoveBall(struct BALL *Ball)
 	switch (Ball->DirY)
 	{
 		case DOWN:
-			if (Ball->Y + BALL_Y_SPEEDMULTIPLIER < LINES - 1)
+			if (Ball->Y + 1 < BRICKTICK_MAX_Y - 1)
 			{
-				Ball->Y += BALL_Y_SPEEDMULTIPLIER;
+				++Ball->Y;
 			}
 			else
 			{
-				Ball->Y = LINES - 2;
+				Ball->Y = BRICKTICK_MAX_Y - 2;
 			}	
 			break;
 		case UP:
-			if (Ball->Y - BALL_Y_SPEEDMULTIPLIER > 0)
+			if (Ball->Y - 1> 0)
 			{
-				Ball->Y -= BALL_Y_SPEEDMULTIPLIER;
+				--Ball->Y;
 			}
 			else
 			{
