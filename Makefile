@@ -7,4 +7,6 @@ clean:
 	rm -fv bricktick
 	$(MAKE) -C src clean
 install:
-	install -m 755 bricktick $(PREFIX)
+	install -m 755 bricktick $(PREFIX)/bin/
+uninstall:
+	rm -fv $(PREFIX)/bin/bricktick
