@@ -8,7 +8,9 @@
 #include <ncurses.h>
 #include "bricktick.h"
 
-struct BRICK Bricks[BRICK_LINE_COUNT][BRICKS_PER_LINE];
+struct BRICK Bricks[BRICK_DEFAULT_NUMLINES][BRICK_DEFAULT_PERLINE];
+int BricksPerLine = BRICK_DEFAULT_PERLINE; /*These are changeable for levelling up, etc.*/
+int BrickNumLines = BRICK_DEFAULT_NUMLINES;
 
 void DrawBrick(struct BRICK *Brick)
 { /*Draw a single brick.*/
@@ -39,19 +41,19 @@ void DrawBrick(struct BRICK *Brick)
 
 void ResetBricks(void)
 { /*Set up parameters for every brick.*/
-	int Width = BRICKTICK_MAX_X / BRICKS_PER_LINE;
-	const int StartY = 4;
+	int Width = BRICKTICK_MAX_X / BricksPerLine;
+	const int StartY = 3;
 	int CWidth = 0;
 	int Inc1 = 0, Inc2 = 0;
 	Bool Flip = false;
 	struct BRICK *B2 = NULL;
 	
 	/*Don't let us run off the screen.*/
-	for (; Width * BRICKS_PER_LINE > BRICKTICK_MAX_X; --Width);
+	for (; Width * BricksPerLine > BRICKTICK_MAX_X; --Width);
 	
-	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	for (; Inc1 < BrickNumLines; ++Inc1)
 	{
-		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		for (Inc2 = 0; Inc2 < BricksPerLine; ++Inc2)
 		{
 			CWidth = Width * Inc2;
 			
@@ -71,9 +73,9 @@ void DrawAllBricks(void)
 {
 	int Inc1 = 0, Inc2 = 0;
 	
-	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	for (; Inc1 < BrickNumLines; ++Inc1)
 	{
-		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		for (Inc2 = 0; Inc2 < BricksPerLine; ++Inc2)
 		{
 			if (Bricks[Inc1][Inc2].Visible)
 			{
@@ -109,9 +111,9 @@ void DeleteAllBricks(void)
 {
 	int Inc1 = 0, Inc2 = 0;
 	
-	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	for (; Inc1 < BrickNumLines; ++Inc1)
 	{
-		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		for (Inc2 = 0; Inc2 < BricksPerLine; ++Inc2)
 		{
 			DeleteBrick(&Bricks[Inc1][Inc2]);
 		}
@@ -123,9 +125,9 @@ int BricksLeft(void)
 	int Inc1 = 0, Inc2 = 0;
 	int BrickCount = 0;
 	
-	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	for (; Inc1 < BrickNumLines; ++Inc1)
 	{
-		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		for (Inc2 = 0; Inc2 < BricksPerLine; ++Inc2)
 		{
 			if (Bricks[Inc1][Inc2].Visible) ++BrickCount;
 		}
@@ -139,9 +141,9 @@ Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const St
 {
 	int Inc1 = 0, Inc2 = 0;
 	
-	for (; Inc1 < BRICK_LINE_COUNT; ++Inc1)
+	for (; Inc1 < BrickNumLines; ++Inc1)
 	{
-		for (Inc2 = 0; Inc2 < BRICKS_PER_LINE; ++Inc2)
+		for (Inc2 = 0; Inc2 < BricksPerLine; ++Inc2)
 		{
 			if (Bricks[Inc1][Inc2].Visible &&
 				Ball->X >= Bricks[Inc1][Inc2].X1 - 1 && Ball->X <= Bricks[Inc1][Inc2].X2 + 1 &&

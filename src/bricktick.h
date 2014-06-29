@@ -9,10 +9,10 @@
 
 #define DEFAULT_PADDLE_LENGTH (BRICKTICK_MAX_X / 10) /*How long the paddle is.*/
 #define DEFAULT_PADDLE_MOVE (DEFAULT_PADDLE_LENGTH / 2)
-#define BRICKS_PER_LINE 20 /*Ten bricks per line of text*/
-#define BRICK_LINE_COUNT 7  /*Four lines of bricks.*/
 #define BRICKTICK_MAX_X 80
 #define BRICKTICK_MAX_Y 24
+#define BRICK_DEFAULT_NUMLINES 5
+#define BRICK_DEFAULT_PERLINE 10
 
 typedef signed char Bool;
 
@@ -78,4 +78,6 @@ extern int BricksLeft(void);
 extern int Lives;
 extern unsigned long Score;
 extern Bool UseColor;
-extern struct BRICK Bricks[BRICK_LINE_COUNT][BRICKS_PER_LINE];
+extern struct BRICK Bricks[BRICK_DEFAULT_NUMLINES][BRICK_DEFAULT_PERLINE];
+extern int BrickNumLines;
+extern int BricksPerLine;

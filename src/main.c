@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 	
 	initscr();
 	
-	if (BRICKTICK_MAX_X < 80 || BRICKTICK_MAX_Y < 24)
+	if (COLS < 80 || LINES < 24)
 	{
 		endwin();
 		fprintf(stderr, "Please use a console with a resolution of at least 80x24.\n");
