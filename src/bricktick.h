@@ -13,6 +13,8 @@
 #define BRICKTICK_MAX_Y 24
 #define BRICK_DEFAULT_NUMLINES 5
 #define BRICK_DEFAULT_PERLINE 10
+#define BRICK_MAX_NUMLINES 8
+#define BRICK_MAX_PERLINE 20
 
 typedef signed char Bool;
 
@@ -78,6 +80,6 @@ extern int BricksLeft(void);
 extern int Lives;
 extern unsigned long Score;
 extern Bool UseColor;
-extern struct BRICK Bricks[BRICK_DEFAULT_NUMLINES][BRICK_DEFAULT_PERLINE];
+extern struct BRICK Bricks[BRICK_MAX_NUMLINES][BRICK_MAX_PERLINE];
 extern int BrickNumLines;
 extern int BricksPerLine;

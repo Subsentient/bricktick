@@ -8,7 +8,7 @@
 #include <ncurses.h>
 #include "bricktick.h"
 
-struct BRICK Bricks[BRICK_DEFAULT_NUMLINES][BRICK_DEFAULT_PERLINE];
+struct BRICK Bricks[BRICK_MAX_NUMLINES][BRICK_MAX_PERLINE];
 int BricksPerLine = BRICK_DEFAULT_PERLINE; /*These are changeable for levelling up, etc.*/
 int BrickNumLines = BRICK_DEFAULT_NUMLINES;
 
