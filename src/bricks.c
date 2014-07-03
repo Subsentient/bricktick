@@ -11,6 +11,7 @@
 struct BRICK Bricks[BRICK_MAX_NUMLINES][BRICK_MAX_PERLINE];
 int BricksPerLine = BRICK_DEFAULT_PERLINE; /*These are changeable for levelling up, etc.*/
 int BrickNumLines = BRICK_DEFAULT_NUMLINES;
+int HeightFromPaddle = BRICK_DEFAULT_HEIGHT; /*How far down from the ceiling the first line of bricks gets drawn. 4 is further down than 3.*/
 
 void DrawBrick(struct BRICK *Brick)
 { /*Draw a single brick.*/
@@ -42,7 +43,7 @@ void DrawBrick(struct BRICK *Brick)
 void ResetBricks(void)
 { /*Set up parameters for every brick.*/
 	int Width = BRICKTICK_MAX_X / BricksPerLine;
-	const int StartY = 3;
+	const int StartY = HeightFromPaddle;
 	int CWidth = 0;
 	int Inc1 = 0, Inc2 = 0;
 	Bool Flip = false;
@@ -65,7 +66,7 @@ void ResetBricks(void)
 			B2->Y = StartY + Inc1;
 			B2->Visible = true;
 		}
-		Flip = !Flip; /*Alternate colors.*/
+		if (BricksPerLine % 2 == 0) Flip = !Flip; /*Alternate colors.*/
 	}
 }
 	

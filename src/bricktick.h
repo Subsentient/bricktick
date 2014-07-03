@@ -15,6 +15,7 @@
 #define BRICK_DEFAULT_PERLINE 10
 #define BRICK_MAX_NUMLINES 8
 #define BRICK_MAX_PERLINE 20
+#define BRICK_DEFAULT_HEIGHT 3
 
 typedef signed char Bool;
 
@@ -46,6 +47,13 @@ struct BRICKSTRIKE
 	enum StrikeV { STRIKE_VNONE, STRIKE_BOTTOM, STRIKE_TOP } StrikeV;
 	enum StrikeH { STRIKE_HNONE, STRIKE_LEFT, STRIKE_RIGHT } StrikeH;
 	struct BRICK *Brick;
+};
+
+struct LEVEL
+{
+	int BrickNumLines;
+	int BricksPerLine;
+	int HeightFromPaddle;
 };
 
 /*Functions.*/
@@ -83,3 +91,5 @@ extern Bool UseColor;
 extern struct BRICK Bricks[BRICK_MAX_NUMLINES][BRICK_MAX_PERLINE];
 extern int BrickNumLines;
 extern int BricksPerLine;
+extern int HeightFromPaddle;
+

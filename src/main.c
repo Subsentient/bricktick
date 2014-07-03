@@ -15,6 +15,31 @@
 int Lives = 3;
 unsigned long Score = 0;
 Bool UseColor = true;
+int Level = 1;
+const struct LEVEL Levels[] =
+					{ /*First level is really easy.*/
+						{ BRICK_DEFAULT_NUMLINES - 2, BRICK_DEFAULT_PERLINE / 2, BRICK_DEFAULT_HEIGHT - 1 },
+						{ BRICK_DEFAULT_NUMLINES, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
+						{ BRICK_DEFAULT_NUMLINES + 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
+						{ BRICK_DEFAULT_NUMLINES + 3, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 1 },
+						{ BRICK_DEFAULT_NUMLINES + 4, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 2 },
+						{ BRICK_DEFAULT_NUMLINES + 4, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 2 },
+						{ 0 } /*Terminator for loops.*/
+					};
+/*Prototypes for statics.*/
+
+static void SetLevel(const int Level_);
+
+/*Functions*/
+						
+static void SetLevel(const int Level_)
+{
+	Level = Level_;
+	
+	HeightFromPaddle = Levels[Level - 1].HeightFromPaddle;
+	BrickNumLines = Levels[Level - 1].BrickNumLines;
+	BricksPerLine = Levels[Level - 1].BricksPerLine;
+}
 
 int main(int argc, char **argv)
 {
@@ -44,10 +69,10 @@ int main(int argc, char **argv)
 	
 	initscr();
 	
-	if (COLS < 80 || LINES < 24)
+	if (COLS < BRICKTICK_MAX_X || LINES < BRICKTICK_MAX_Y)
 	{
 		endwin();
-		fprintf(stderr, "Please use a console with a resolution of at least 80x24.\n");
+		fprintf(stderr, "Please use a console with a resolution of at least %dx%d.\n", BRICKTICK_MAX_X, BRICKTICK_MAX_Y);
 		exit(1);
 		
 	}
@@ -81,7 +106,8 @@ int main(int argc, char **argv)
 
 	refresh();
 
-	/*Fix our color so we needn't create a window.*/
+	/*Reset to level 1.*/
+	SetLevel(1);
 	
 	ResetBall(&Ball);
 	ResetPaddle(&Paddle);
@@ -136,6 +162,8 @@ MainLoop:
 					DeleteBall(&Ball);
 					DeletePaddle(&Paddle);
 					DeleteAllBricks();
+					
+					SetLevel(1); /*Set back to the default level again.*/
 					
 					ResetPaddle(&Paddle);
 					ResetBricks();
@@ -248,6 +276,26 @@ MainLoop:
 			
 			DeleteBrick(Strike.Brick);
 			DrawScore((Score += 100));
+			
+			if (!BricksLeft())
+			{
+				DeleteAllBricks();
+				DeleteBall(&Ball);
+				DeletePaddle(&Paddle);
+				
+				SetLevel(++Level);
+				
+				ResetBall(&Ball);
+				ResetPaddle(&Paddle);
+				ResetBricks();
+				
+				DrawAllBricks();
+				DrawPaddle(&Paddle);
+				WaitForUserLaunch();
+				DrawBall(&Ball);
+
+				continue;
+			}
 		}
 		
 		switch (Key)
