@@ -27,7 +27,7 @@ void BounceBallY(struct BALL *const Ball, DirectionY Direction)
 void ResetBall(struct BALL *Ball)
 {
 	Ball->X = BRICKTICK_MAX_X / 2;
-	Ball->Y = BRICKTICK_MAX_Y / 2;
+	Ball->Y = BRICKTICK_MAX_Y - 4; /*A little bit above the ball.*/
 	Ball->DirX = X_NEUTRAL;
 	Ball->DirY = DOWN;
 }

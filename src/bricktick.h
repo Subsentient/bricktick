@@ -49,13 +49,6 @@ struct BRICKSTRIKE
 	struct BRICK *Brick;
 };
 
-struct LEVEL
-{
-	int BrickNumLines;
-	int BricksPerLine;
-	int HeightFromPaddle;
-};
-
 /*Functions.*/
 extern void ResetBall(struct BALL *Ball);
 extern void DrawBall(struct BALL *Ball);
@@ -70,12 +63,6 @@ extern void DeletePaddle(struct PADDLE *Paddle);
 extern void MovePaddle(struct PADDLE *Paddle, DirectionX Direction);
 extern Bool CheckBallHitPaddle(struct BALL *Ball, struct PADDLE *Paddle);
 
-extern void DrawMessage(const char *const Message);
-extern void DeleteMessage(void);
-extern void DrawLives(int Lives);
-extern void DrawScore(unsigned long Score);
-extern void WaitForUserLaunch(void);
-
 extern void DrawBrick(struct BRICK *Brick);
 extern Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const Strike);
 extern void ResetBricks(void);
@@ -85,8 +72,6 @@ extern void DeleteBrick(struct BRICK *Brick);
 extern int BricksLeft(void);
 
 /*Globals*/
-extern int Lives;
-extern unsigned long Score;
 extern Bool UseColor;
 extern struct BRICK Bricks[BRICK_MAX_NUMLINES][BRICK_MAX_PERLINE];
 extern int BrickNumLines;

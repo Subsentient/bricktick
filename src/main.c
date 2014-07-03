@@ -12,49 +12,292 @@
 #include <time.h>
 #include "bricktick.h"
 
-int Lives = 3;
-unsigned long Score = 0;
+#define BRICKTICK_NUMLEVELS 7
+#define BRICKTICK_NUMLIVES 3
+
+/*Types*/
+struct LEVEL
+{
+	int BrickNumLines;
+	int BricksPerLine;
+	int HeightFromPaddle;
+};
+
+/*Globals*/
+static int Lives = BRICKTICK_NUMLIVES;
+static int Level = 1;
+static int Score = 0;
 Bool UseColor = true;
-int Level = 1;
-const struct LEVEL Levels[] =
-					{ /*First level is really easy.*/
-						{ BRICK_DEFAULT_NUMLINES - 2, BRICK_DEFAULT_PERLINE / 2, BRICK_DEFAULT_HEIGHT - 1 },
+const struct LEVEL Levels[BRICKTICK_NUMLEVELS] =
+					{
+						{ BRICK_DEFAULT_NUMLINES - 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT - 1 },
 						{ BRICK_DEFAULT_NUMLINES, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
 						{ BRICK_DEFAULT_NUMLINES + 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
 						{ BRICK_DEFAULT_NUMLINES + 3, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 1 },
-						{ BRICK_DEFAULT_NUMLINES + 4, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 2 },
 						{ BRICK_DEFAULT_NUMLINES + 4, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 2 },
-						{ 0 } /*Terminator for loops.*/
+						{ BRICK_DEFAULT_NUMLINES + 5, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 3 },
+						{ BRICK_DEFAULT_NUMLINES + 6, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 4 },
 					};
-/*Prototypes for statics.*/
-
-static void SetLevel(const int Level_);
+					
+/*Prototypes for static functions.*/
+static void DrawMessage(const char *const Message);
+static void DeleteMessage(void);
+static void WaitForUserLaunch(void);
+static Bool SetLevel(const int Level_);
+static void ProcessGameOver(struct BALL *Ball, struct PADDLE *Paddle);
+static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle);
+static void DrawStats(void);
 
 /*Functions*/
-						
-static void SetLevel(const int Level_)
+
+static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
+{ /*Primary loop where most events get processed.*/
+	
+	struct BRICKSTRIKE Strike;
+	int Key = 0;
+	int SecTick = 0;
+	Bool PaddleMovedLastTick;
+	DirectionX PaddleMoveDir;
+	
+	
+	while ((Key = getch()) != 27) /*27 is ESC*/
+	{		
+		if (SecTick == 10)
+		{ /*We get score every second for just surviving.*/
+			Score += 2;
+			DrawStats();
+			SecTick = 0;
+		}
+		++SecTick;
+
+		if (Ball->Y == 1)
+		{ /*We hit the ceiling.*/
+			BounceBallY(Ball, DOWN);
+		}
+		else if (Ball->Y >= BRICKTICK_MAX_Y - 2)
+		{ /*More happens when we hit the floor.*/
+			if (!CheckBallHitPaddle(Ball, Paddle))
+			{
+				DeleteBall(Ball);
+				Ball->Y = BRICKTICK_MAX_Y - 1;
+				DrawBall(Ball);
+				
+				if (Lives == 1)
+				{ /*We ran out of lives.*/
+					ProcessGameOver(Ball, Paddle);
+				}
+				else
+				{
+					--Lives;
+					DrawStats();
+					
+					WaitForUserLaunch();
+							
+					DeleteBall(Ball);
+					DeletePaddle(Paddle);
+					
+					ResetBall(Ball);
+					ResetPaddle(Paddle);
+					
+					DrawPaddle(Paddle);
+					DrawBall(Ball);
+					
+					/*Redraw but don't reset.*/
+					DrawAllBricks();
+				}
+			}
+			else
+			{
+				BounceBallY(Ball, UP);
+				
+				if (PaddleMovedLastTick)
+				{ /*We can "whack" the ball with our Paddle->*/
+					Ball->DirX = PaddleMoveDir;
+				}
+				else
+				{ /*We cut the paddle into thirds for the X direction after bounce.*/
+#define PADDLE_THIRD (Paddle->Length / 3)
+					if (Ball->X <= Paddle->X + PADDLE_THIRD)
+					{
+						Ball->DirX = LEFT;
+					}
+					else if (Ball->X  > Paddle->X + PADDLE_THIRD && Ball->X <= Paddle->X + (PADDLE_THIRD * 2))
+					{
+						/*Make whether we hit up or not as a chance.*/
+						Bool StraightUp = rand() & 1;
+						if (StraightUp) Ball->DirX = X_NEUTRAL;
+					}
+					else
+					{
+						Ball->DirX = RIGHT;
+					}
+				}
+			}
+		}
+		PaddleMovedLastTick = false;
+		/*Bounce off left and right walls.*/
+		if (Ball->X >= BRICKTICK_MAX_X - 1)
+		{
+			Ball->X = BRICKTICK_MAX_X - 1;
+			BounceBallX(Ball, LEFT);
+		}
+		else if (Ball->X <= 0)
+		{
+			Ball->X = 0;
+			BounceBallX(Ball, RIGHT);
+		}
+			
+	
+		/*We hit a brick.*/
+		if (BallStruckBrick(Ball, &Strike))
+		{
+			switch (Strike.StrikeV)
+			{
+				case STRIKE_TOP:
+					Ball->DirY = UP;
+					break;
+				case STRIKE_BOTTOM:
+					Ball->DirY = DOWN;
+					break;
+				default:
+					break;
+			}
+			
+			switch (Strike.StrikeH)
+			{
+				case STRIKE_LEFT:
+					Ball->DirX = LEFT;
+					break;
+				case STRIKE_RIGHT:
+					Ball->DirX = RIGHT;
+					break;
+				default:
+				{
+					if (Ball->DirX != X_NEUTRAL) break;
+					else
+					{
+						Bool Dir = rand() & 1;
+						Ball->DirX = (DirectionX)Dir;
+					}
+					break;
+				}
+			}
+			
+			DeleteBrick(Strike.Brick);
+			Score += 100;
+			DrawStats();
+			
+			if (!BricksLeft())
+			{ /*Move to next level.*/
+				DeleteAllBricks();
+				DeleteBall(Ball);
+				DeletePaddle(Paddle);
+				
+				SetLevel(Level + 1);
+				DrawStats();
+				Score += 1000; /*Reward for making it this far.*/
+				Lives = BRICKTICK_NUMLIVES;
+				
+				ResetBall(Ball);
+				ResetPaddle(Paddle);
+				ResetBricks();
+				
+				DrawAllBricks();
+				DrawPaddle(Paddle);
+				WaitForUserLaunch();
+				DrawBall(Ball);
+
+				continue;
+			}
+		}
+		
+		switch (Key)
+		{ /*Paddle movement.*/
+			case KEY_LEFT:
+				MovePaddle(Paddle, LEFT);
+				PaddleMovedLastTick = true;
+				PaddleMoveDir = LEFT;
+				break;
+			case KEY_RIGHT:
+				MovePaddle(Paddle, RIGHT);
+				PaddleMovedLastTick = true;
+				PaddleMoveDir = RIGHT;
+				break;
+			case ' ':
+				DrawMessage("PAUSED");
+				cbreak();
+				while (getch() != ' ');
+				DeleteMessage();
+				halfdelay(1);
+				break;
+			default:
+				break;
+		}
+		
+		MoveBall(Ball);
+	}
+}
+
+static void ProcessGameOver(struct BALL *Ball, struct PADDLE *Paddle)
 {
+	Lives = 0;
+	
+	DrawStats();
+	
+	Lives = 3;
+	Score = 0;
+	DrawMessage("GAME OVER -- Press ESC to exit or any key to play again");
+	cbreak();
+	if (getch() == 27)
+	{
+		endwin();
+		exit(0);
+	}
+	halfdelay(1);
+	DeleteMessage();
+	
+	DeleteBall(Ball);
+	DeletePaddle(Paddle);
+	DeleteAllBricks();
+	
+	SetLevel(1); /*Set back to the default level again.*/
+	
+	ResetPaddle(Paddle);
+	ResetBricks();
+	
+	DrawPaddle(Paddle);
+	DrawAllBricks();
+	
+	DrawStats();
+	
+	/*Assume they want to play again.*/
+	WaitForUserLaunch();
+	ResetBall(Ball);
+	DrawBall(Ball);
+}
+						
+static Bool SetLevel(const int Level_)
+{
+	
+	if (Level > BRICKTICK_NUMLEVELS) return false;
+	
 	Level = Level_;
 	
 	HeightFromPaddle = Levels[Level - 1].HeightFromPaddle;
 	BrickNumLines = Levels[Level - 1].BrickNumLines;
 	BricksPerLine = Levels[Level - 1].BricksPerLine;
+	
+	return true;
 }
 
 int main(int argc, char **argv)
 {
+	int Inc = 1;
 	struct BALL Ball = { 0 };
 	struct PADDLE Paddle = { 0 };
-	int Key = 0;
-	int SecTick = 0;
-	Bool PaddleMovedLastTick;
-	DirectionX PaddleMoveDir;
-	struct BRICKSTRIKE Strike;
-	
-	int Inc = 1;
 	
 	for (; Inc < argc; ++Inc)
-	{
+	{ /*Argument parsing.*/
 		if (!strcmp("--nocolor", argv[Inc]))
 		{
 			UseColor = false;
@@ -67,7 +310,7 @@ int main(int argc, char **argv)
 	}
 	
 	
-	initscr();
+	initscr(); /*Fire up ncurses.*/
 	
 	if (COLS < BRICKTICK_MAX_X || LINES < BRICKTICK_MAX_Y)
 	{
@@ -84,6 +327,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 	
+	/*Various ncurses things.*/
 	noecho();
 	halfdelay(1);
 	keypad(stdscr, true);
@@ -91,7 +335,7 @@ int main(int argc, char **argv)
 	curs_set(0);
 	
 	if (UseColor)
-	{
+	{ /*Color fireup.*/
 		start_color();
 		init_pair(1, COLOR_CYAN, COLOR_BLACK);
 		init_pair(2, COLOR_GREEN, COLOR_BLACK);
@@ -101,10 +345,7 @@ int main(int argc, char **argv)
 	
 	
 	/*Show our initial lives count.*/
-	DrawLives(Lives);
-	DrawScore(Score);
-
-	refresh();
+	DrawStats();
 
 	/*Reset to level 1.*/
 	SetLevel(1);
@@ -118,214 +359,20 @@ int main(int argc, char **argv)
 	DrawAllBricks();
 	/*Wait for L key.*/
 	WaitForUserLaunch();
+	DrawAllBricks(); /*Redraw to fix goofing by WaitForUserLaunch().*/
 	
 	/*Set up the number generator.*/
 	srand(time(NULL));
-MainLoop:
-	while ((Key = getch()) != 27) /*27 is ESC*/
-	{		
-		if (SecTick == 10)
-		{ /*We get score every second for just surviving.*/
-			DrawScore((Score += 2));
-			SecTick = 0;
-		}
-		++SecTick;
 
-		if (Ball.Y == 1)
-		{ /*We hit the ceiling.*/
-			BounceBallY(&Ball, DOWN);
-		}
-		else if (Ball.Y >= BRICKTICK_MAX_Y - 2)
-		{ /*More happens when we hit the floor.*/
-			if (!CheckBallHitPaddle(&Ball, &Paddle))
-			{
-				DeleteBall(&Ball);
-				Ball.Y = BRICKTICK_MAX_Y - 1;
-				DrawBall(&Ball);
-				
-				if (Lives == 1)
-				{
-					DrawLives(0);
-					
-					Lives = 3;
-					Score = 0;
-					DrawMessage("GAME OVER -- Press ESC to exit or any key to play again");
-					cbreak();
-					if (getch() == 27)
-					{
-						endwin();
-						exit(0);
-					}
-					halfdelay(1);
-					DeleteMessage();
-					
-					DeleteBall(&Ball);
-					DeletePaddle(&Paddle);
-					DeleteAllBricks();
-					
-					SetLevel(1); /*Set back to the default level again.*/
-					
-					ResetPaddle(&Paddle);
-					ResetBricks();
-					
-					DrawPaddle(&Paddle);
-					DrawAllBricks();
-					
-					DrawLives(Lives);
-					
-					/*Assume they want to play again.*/
-					WaitForUserLaunch();
-					ResetBall(&Ball);
-					DrawBall(&Ball);
-				}
-				else
-				{
-					DrawLives(--Lives);
-					
-					WaitForUserLaunch();
-							
-					DeleteBall(&Ball);
-					DeletePaddle(&Paddle);
-					
-					ResetBall(&Ball);
-					ResetPaddle(&Paddle);
-					
-					DrawPaddle(&Paddle);
-					DrawBall(&Ball);
-					
-					/*Redraw but don't reset.*/
-					DrawAllBricks();
-				}
-			}
-			else
-			{
-				BounceBallY(&Ball, UP);
-				
-				if (PaddleMovedLastTick)
-				{ /*We can "whack" the ball with our paddle.*/
-					Ball.DirX = PaddleMoveDir;
-				}
-				else
-				{ /*We cut the paddle into thirds for the X direction after bounce.*/
-#define PADDLE_THIRD (Paddle.Length / 3)
-					if (Ball.X <= Paddle.X + PADDLE_THIRD)
-					{
-						Ball.DirX = LEFT;
-					}
-					else if (Ball.X  > Paddle.X + PADDLE_THIRD && Ball.X <= Paddle.X + (PADDLE_THIRD * 2))
-					{
-						/*Make whether we hit up or not as a chance.*/
-						Bool StraightUp = rand() & 1;
-						if (StraightUp) Ball.DirX = X_NEUTRAL;
-					}
-					else
-					{
-						Ball.DirX = RIGHT;
-					}
-				}
-			}
-		}
-		PaddleMovedLastTick = false;
-		/*Bounce off left and right walls.*/
-		if (Ball.X >= BRICKTICK_MAX_X - 1)
-		{
-			Ball.X = BRICKTICK_MAX_X - 1;
-			BounceBallX(&Ball, LEFT);
-		}
-		else if (Ball.X <= 0)
-		{
-			Ball.X = 0;
-			BounceBallX(&Ball, RIGHT);
-		}
-			
-	
-		/*We hit a brick.*/
-		if (BallStruckBrick(&Ball, &Strike))
-		{
-			switch (Strike.StrikeV)
-			{
-				case STRIKE_TOP:
-					Ball.DirY = UP;
-					break;
-				case STRIKE_BOTTOM:
-					Ball.DirY = DOWN;
-					break;
-				default:
-					break;
-			}
-			
-			switch (Strike.StrikeH)
-			{
-				case STRIKE_LEFT:
-					Ball.DirX = LEFT;
-					break;
-				case STRIKE_RIGHT:
-					Ball.DirX = RIGHT;
-					break;
-				default:
-				{
-					if (Ball.DirX != X_NEUTRAL) break;
-					else
-					{
-						Bool Dir = rand() & 1;
-						Ball.DirX = (DirectionX)Dir;
-					}
-					break;
-				}
-			}
-			
-			DeleteBrick(Strike.Brick);
-			DrawScore((Score += 100));
-			
-			if (!BricksLeft())
-			{
-				DeleteAllBricks();
-				DeleteBall(&Ball);
-				DeletePaddle(&Paddle);
-				
-				SetLevel(++Level);
-				
-				ResetBall(&Ball);
-				ResetPaddle(&Paddle);
-				ResetBricks();
-				
-				DrawAllBricks();
-				DrawPaddle(&Paddle);
-				WaitForUserLaunch();
-				DrawBall(&Ball);
-
-				continue;
-			}
-		}
-		
-		switch (Key)
-		{ /*Paddle movement.*/
-			case KEY_LEFT:
-				MovePaddle(&Paddle, LEFT);
-				PaddleMovedLastTick = true;
-				PaddleMoveDir = LEFT;
-				break;
-			case KEY_RIGHT:
-				MovePaddle(&Paddle, RIGHT);
-				PaddleMovedLastTick = true;
-				PaddleMoveDir = RIGHT;
-				break;
-			case ' ':
-				DrawMessage("PAUSED");
-				cbreak();
-				while (getch() != ' ');
-				DeleteMessage();
-				halfdelay(1);
-				break;
-			default:
-				break;
-		}
-		
-		MoveBall(&Ball);
-	}
+	/**
+	 * Main loop for the game!
+	 **/
+	GameLoop(&Ball, &Paddle);
 	
 	DrawMessage("Really quit Bricktick? y/n");
 	cbreak();
+	
+	/*When the game loop exits.*/
 	switch (getch())
 	{
 		case 'y':
@@ -335,7 +382,7 @@ MainLoop:
 			DeleteMessage();
 			refresh();
 			halfdelay(1);
-			goto MainLoop;
+			GameLoop(&Ball, &Paddle);
 			break;
 	}
 	DeleteBall(&Ball);
@@ -346,14 +393,14 @@ MainLoop:
 	return 0;
 }
 
-void DrawMessage(const char *const Message)
+static void DrawMessage(const char *const Message)
 {
 	move(BRICKTICK_MAX_Y / 2, (BRICKTICK_MAX_X - strlen(Message)) / 2);
 	addstr(Message);
 	refresh();
 }
 
-void DeleteMessage(void)
+static void DeleteMessage(void)
 {
 	int Inc = 0;
 	move(BRICKTICK_MAX_Y / 2, 0);
@@ -365,42 +412,45 @@ void DeleteMessage(void)
 	refresh();
 }
 
-void DrawLives(int Lives)
+static void DrawStats(void)
 {
+	int Inc = 0;
+	const char *const Formats[] = { "Lives: %d", "Score: %d", "Level: %d" };
+	const int *const Ptrs[sizeof Formats / sizeof *Formats] = { &Lives, &Score, &Level };
+
+	/*Move to our starting position.*/
 	move(0, 2);
-	if (UseColor) attron(COLOR_PAIR(3));
-	printw("Lives: %d", Lives);
 	
-	if (UseColor)
+	/*Clear any old.*/
+	for (; Inc < BRICKTICK_MAX_X - 1; ++Inc)
 	{
-		/*For us.*/
-		attroff(COLOR_PAIR(3));
-		/*For everyone else.*/
-		attrset(COLOR_PAIR(1));
+		addch(' ');
+	}
+	
+	/*Print the new.*/
+	move(0, 2);
+	
+	for (Inc = 0; Inc < sizeof Formats / sizeof *Formats; ++Inc)
+	{
+		if (UseColor) attron(COLOR_PAIR(3));
+		
+		printw(Formats[Inc], *Ptrs[Inc]);
+		
+		if (UseColor)
+		{
+			/*For us.*/
+			attroff(COLOR_PAIR(3));
+			/*For everyone else.*/
+			attrset(COLOR_PAIR(1));
+		}
+		
+		/*Padding.*/
+		if (Inc + 1 != sizeof Formats / sizeof *Formats) addch('\t'), addch('\t'), addch('\t');
 	}
 	refresh();
 }
 
-void DrawScore(unsigned long Score)
-{
-	char ScoreMSG[128];
-	snprintf(ScoreMSG, sizeof ScoreMSG, "Score: %lu", Score);
-	
-	move(0, BRICKTICK_MAX_X - 1 - strlen(ScoreMSG) - 2);
-	if (UseColor) attron(COLOR_PAIR(3));
-	addstr(ScoreMSG);
-
-	if (UseColor)
-	{
-		/*For us.*/
-		attroff(COLOR_PAIR(3));
-		/*For everyone else.*/
-		attrset(COLOR_PAIR(1));
-	}
-	refresh();
-}
-
-void WaitForUserLaunch(void)
+static void WaitForUserLaunch(void)
 {
 	int Key;
 	
