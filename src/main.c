@@ -30,13 +30,13 @@ static int Score = 0;
 Bool UseColor = true;
 const struct LEVEL Levels[BRICKTICK_NUMLEVELS] =
 					{
-						{ BRICK_DEFAULT_NUMLINES - 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT - 1 },
+						{ BRICK_DEFAULT_NUMLINES - 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
 						{ BRICK_DEFAULT_NUMLINES, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
-						{ BRICK_DEFAULT_NUMLINES + 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
-						{ BRICK_DEFAULT_NUMLINES + 3, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 1 },
-						{ BRICK_DEFAULT_NUMLINES + 4, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 2 },
-						{ BRICK_DEFAULT_NUMLINES + 5, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 3 },
-						{ BRICK_DEFAULT_NUMLINES + 6, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 4 },
+						{ BRICK_DEFAULT_NUMLINES + 3, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
+						{ BRICK_DEFAULT_NUMLINES + 5, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 2 },
+						{ BRICK_DEFAULT_NUMLINES + 7, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 3 },
+						{ BRICK_DEFAULT_NUMLINES + 9, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 5 },
+						{ BRICK_MAX_NUMLINES, BRICK_MAX_PERLINE, BRICK_DEFAULT_HEIGHT },
 					};
 					
 /*Prototypes for static functions.*/
@@ -189,23 +189,69 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 			
 			if (!BricksLeft())
 			{ /*Move to next level.*/
-				DeleteAllBricks();
-				DeleteBall(Ball);
-				DeletePaddle(Paddle);
-				
-				SetLevel(Level + 1);
-				DrawStats();
-				Score += 1000; /*Reward for making it this far.*/
-				Lives = BRICKTICK_NUMLIVES;
-				
-				ResetBall(Ball);
-				ResetPaddle(Paddle);
-				ResetBricks();
-				
-				DrawAllBricks();
-				DrawPaddle(Paddle);
-				WaitForUserLaunch();
-				DrawBall(Ball);
+
+				if (SetLevel(Level + 1))
+				{ /*We have more levels to go before we win.*/
+					DeleteAllBricks();
+					DeleteBall(Ball);
+					DeletePaddle(Paddle);
+					DrawStats();
+					
+					Score += 1000; /*Reward for making it this far.*/
+					Lives = BRICKTICK_NUMLIVES;
+					
+					ResetBall(Ball);
+					ResetPaddle(Paddle);
+					ResetBricks();
+					
+					DrawAllBricks();
+					DrawPaddle(Paddle);
+					WaitForUserLaunch();
+					DrawBall(Ball);
+				}
+				else
+				{ /*WE WON!!!!*/
+					char WonBuf[256];
+					
+					snprintf(WonBuf, sizeof WonBuf, "You Won! Score is %d! Hit ESC to exit or space to play again.", Score);
+					DrawMessage(WonBuf);
+					
+				WinRegetch:
+					switch (getch())
+					{
+						case 27: /*27 is ESC*/
+							endwin();
+							exit(0);
+							break;
+						case ' ':
+						{
+							DeleteMessage();
+							
+							SetLevel(1);
+							
+							Lives = BRICKTICK_NUMLIVES;
+							Score = 0;
+							
+							DeleteAllBricks();
+							DeleteBall(Ball);
+							DeletePaddle(Paddle);
+							DrawStats();
+							
+							ResetBall(Ball);
+							ResetPaddle(Paddle);
+							ResetBricks();
+							
+							DrawAllBricks();
+							DrawPaddle(Paddle);
+							WaitForUserLaunch();
+							DrawBall(Ball);
+							
+							continue; /*For the loop we are in.*/
+						}
+						default:
+							goto WinRegetch;
+					}
+				}
 
 				continue;
 			}
@@ -224,12 +270,26 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 				PaddleMoveDir = RIGHT;
 				break;
 			case ' ':
+			{
 				DrawMessage("PAUSED");
 				cbreak();
-				while (getch() != ' ');
-				DeleteMessage();
-				halfdelay(1);
-				break;
+				
+			PauseRegetch:
+				switch (getch())
+				{
+					case ' ':
+						DeleteMessage();
+						DrawAllBricks(); /*Redraw to fix what deleting the message messed up.*/
+						halfdelay(1);
+						break;
+					case 27: /*27 is ESC*/
+						endwin();
+						exit(0);
+						break;
+					default:
+						goto PauseRegetch;
+				}
+			}
 			default:
 				break;
 		}
@@ -240,19 +300,34 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 
 static void ProcessGameOver(struct BALL *Ball, struct PADDLE *Paddle)
 {
+	char OutBuf[255];
+	
+	snprintf(OutBuf, sizeof OutBuf, "GAME OVER! Score is %d. Hit ESC to exit or space to play again.", Score);
+
 	Lives = 0;
 	
 	DrawStats();
 	
 	Lives = 3;
 	Score = 0;
-	DrawMessage("GAME OVER -- Press ESC to exit or any key to play again");
+	
+	DrawMessage(OutBuf);
+	
 	cbreak();
-	if (getch() == 27)
+	
+AskAgain:
+	switch (getch())
 	{
-		endwin();
-		exit(0);
+		case 27: /*27 is ESC.*/
+			endwin();
+			exit(0);
+			break;
+		case ' ':
+			break;
+		default:
+			goto AskAgain;
 	}
+	
 	halfdelay(1);
 	DeleteMessage();
 	
@@ -279,7 +354,7 @@ static void ProcessGameOver(struct BALL *Ball, struct PADDLE *Paddle)
 static Bool SetLevel(const int Level_)
 {
 	
-	if (Level > BRICKTICK_NUMLEVELS) return false;
+	if (Level_ > BRICKTICK_NUMLEVELS) return false;
 	
 	Level = Level_;
 	
@@ -348,7 +423,7 @@ int main(int argc, char **argv)
 	DrawStats();
 
 	/*Reset to level 1.*/
-	SetLevel(1);
+	SetLevel(5);
 	
 	ResetBall(&Ball);
 	ResetPaddle(&Paddle);
@@ -367,6 +442,7 @@ int main(int argc, char **argv)
 	/**
 	 * Main loop for the game!
 	 **/
+Reloop:
 	GameLoop(&Ball, &Paddle);
 	
 	DrawMessage("Really quit Bricktick? y/n");
@@ -382,7 +458,8 @@ int main(int argc, char **argv)
 			DeleteMessage();
 			refresh();
 			halfdelay(1);
-			GameLoop(&Ball, &Paddle);
+			DrawAllBricks(); /*Fix damage to brick display resulting from the message.*/
+			goto Reloop;
 			break;
 	}
 	DeleteBall(&Ball);
