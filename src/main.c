@@ -423,7 +423,7 @@ int main(int argc, char **argv)
 	DrawStats();
 
 	/*Reset to level 1.*/
-	SetLevel(5);
+	SetLevel(1);
 	
 	ResetBall(&Ball);
 	ResetPaddle(&Paddle);
