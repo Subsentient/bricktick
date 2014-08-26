@@ -22,7 +22,7 @@ Bool AddCharm(struct BRICK *const Brick)
 	/*Charm type counter/selector thingy.*/
 	if (Type == CHARM_MAX) Type = CHARM_MIN;
 	
-	for (; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE && Charms[Inc].Brick != NULL; ++Inc);
+	for (; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE && Charms[Inc].Type != CHARM_NONE; ++Inc);
 	
 	if (Inc == BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE) return false; /*No space left.*/
 	
@@ -32,8 +32,6 @@ Bool AddCharm(struct BRICK *const Brick)
 	
 	Charms[Inc].X = Brick->X2 - (Brick->X2 - Brick->X1) / 2;
 	Charms[Inc].Y = Brick->Y + 1;
-	
-	while (BrickOnLocation(Charms[Inc].X, Charms[Inc].Y)) ++Charms[Inc].Y;
 	
 	++Type; /*For next iteration.*/
 	
@@ -60,6 +58,9 @@ void DrawCharm(struct CHARM *const Charm)
 	char Character = 0;
 
 	if (!Charm || Charm->Brick != NULL) return; /*Non-null means its brick hasn't been destroyed.*/
+	
+	/*Special exception on long drops with holes between bricks.*/
+	if (BrickOnLocation(Charm->X, Charm->Y)) ++Charm->Y;
 	
 	switch (Charm->Type)
 	{
@@ -102,9 +103,9 @@ struct CHARM *GetCharmByBrick(const struct BRICK *const Brick)
 	
 	if (!Brick) return NULL;
 	
-	for (; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE && Charms[Inc].Type != CHARM_NONE; ++Inc)
+	for (; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
 	{
-		if (Charms[Inc].Brick != NULL && Brick == Charms[Inc].Brick) return Charms + Inc;
+		if (Charms[Inc].Brick != NULL && Charms[Inc].Type != CHARM_NONE && Brick == Charms[Inc].Brick) return Charms + Inc;
 	}
 	
 	return NULL;
@@ -124,6 +125,17 @@ Bool DeleteCharm(struct CHARM *const Charm)
 	addch(' ');
 	refresh();
 	return true;
+}
+
+void DeleteAllCharms(void)
+{
+	int Inc = 0;
+	
+	for (; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
+	{
+		if (Charms[Inc].Type == CHARM_NONE || Charms[Inc].Brick != NULL) continue;
+		DeleteCharm(Charms + Inc);
+	}
 }
 
 Bool ProcessCharmAction(struct CHARM *const Charm, void *OutStream)

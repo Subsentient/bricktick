@@ -87,6 +87,7 @@ extern Bool CheckCharmHitPaddle(struct PADDLE *const Paddle, struct CHARM *const
 extern struct CHARM *GetCharmByBrick(const struct BRICK *const Brick);
 extern Bool PerformCharmDrop(struct CHARM *const Charm);
 extern Bool ProcessCharmAction(struct CHARM *const Charm, void *OutStream);
+extern void DeleteAllCharms(void);
 
 /*Globals*/
 extern Bool UseColor;

@@ -151,9 +151,9 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 			
 	
 		/*Check if a charm hit the paddle.*/
-		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE && Charms[Inc].Type != CHARM_NONE; ++Inc)
+		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
 		{
-			if (Charms[Inc].Y != BRICKTICK_MAX_Y - 2) continue;
+			if (Charms[Inc].Type == CHARM_NONE || Charms[Inc].Brick != NULL || Charms[Inc].Y != BRICKTICK_MAX_Y - 2) continue;
 			
 			if (CheckCharmHitPaddle(Paddle, Charms + Inc))
 			{
@@ -228,6 +228,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 				if (SetLevel(Level + 1))
 				{ /*We have more levels to go before we win.*/
 					DeleteAllBricks();
+					DeleteAllCharms();
 					DeleteBall(Ball);
 					DeletePaddle(Paddle);
 					DrawStats();
@@ -268,6 +269,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 							Score = 0;
 							
 							DeleteAllBricks();
+							DeleteAllCharms();
 							DeleteBall(Ball);
 							DeletePaddle(Paddle);
 							DrawStats();
@@ -297,6 +299,11 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 				if (Charm)
 				{ /*We DO have a charm for this brick.*/
 					PerformCharmDrop(Charm); /*Mark it dropped.*/
+					
+					/*Don't allow us to move through bricks.*/
+					while (BrickOnLocation(Charm->X, Charm->Y)) ++Charm->Y;
+					
+					/*Now draw the charm.*/
 					DrawCharm(Charm);
 				}
 			}
@@ -348,8 +355,10 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 		if (SlowBallTicks > 0) --SlowBallTicks;
 		
 		/*Charm movement.*/		
-		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE && Charms[Inc].Type != CHARM_NONE; ++Inc)
+		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
 		{
+			if (Charms[Inc].Type == CHARM_NONE || Charms[Inc].Brick != NULL) continue;
+			
 			if (Flip) MoveCharm(Charms + Inc);
 		}
 	}
@@ -391,7 +400,7 @@ AskAgain:
 	DeleteBall(Ball);
 	DeletePaddle(Paddle);
 	DeleteAllBricks();
-	
+	DeleteAllCharms();
 	SetLevel(1); /*Set back to the default level again.*/
 	
 	ResetPaddle(Paddle);
