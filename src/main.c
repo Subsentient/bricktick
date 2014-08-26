@@ -244,6 +244,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 					DrawPaddle(Paddle);
 					WaitForUserLaunch();
 					DrawBall(Ball);
+					DrawAllBricks(); /*Redraw to fix WaitForUserLaunch() goofing.*/
 				}
 				else
 				{ /*WE WON!!!!*/
@@ -282,7 +283,8 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 							DrawPaddle(Paddle);
 							WaitForUserLaunch();
 							DrawBall(Ball);
-							
+							DrawAllBricks(); /*Redraw to fix WaitForUserLaunch() goofing.*/
+
 							continue; /*For the loop we are in.*/
 						}
 						default:
@@ -415,6 +417,8 @@ AskAgain:
 	WaitForUserLaunch();
 	ResetBall(Ball);
 	DrawBall(Ball);
+	DrawAllBricks(); /*Redraw to fix WaitForUserLaunch() goofing.*/
+
 }
 						
 static Bool SetLevel(const int Level_)
