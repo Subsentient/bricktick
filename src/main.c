@@ -301,10 +301,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 				if (Charm)
 				{ /*We DO have a charm for this brick.*/
 					PerformCharmDrop(Charm); /*Mark it dropped.*/
-					
-					/*Don't allow us to move through bricks.*/
-					while (BrickOnLocation(Charm->X, Charm->Y)) ++Charm->Y;
-					
+
 					/*Now draw the charm.*/
 					DrawCharm(Charm);
 				}

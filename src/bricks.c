@@ -118,7 +118,7 @@ Bool BrickOnLocation(const int X, const int Y)
 		{
 			Brick = Bricks[Inc] + Inc2;
 			
-			if (Brick->Visible && X >= Brick->X1 && Y <= Brick->X2 && Y == Brick->Y)
+			if (Brick->Visible && X >= Brick->X1 && X <= Brick->X2 && Y == Brick->Y)
 			{
 				return true;
 			}

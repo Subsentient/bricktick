@@ -59,8 +59,8 @@ void DrawCharm(struct CHARM *const Charm)
 
 	if (!Charm || Charm->Brick != NULL) return; /*Non-null means its brick hasn't been destroyed.*/
 	
-	/*Special exception on long drops with holes between bricks.*/
-	if (BrickOnLocation(Charm->X, Charm->Y)) ++Charm->Y;
+	/*Special exception on long drops with holes between bricks etc.*/
+	while (BrickOnLocation(Charm->X, Charm->Y)) ++Charm->Y;
 	
 	switch (Charm->Type)
 	{
