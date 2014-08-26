@@ -57,37 +57,37 @@ struct CHARM
 };
 
 /*Functions.*/
-extern void ResetBall(struct BALL *Ball);
-extern void DrawBall(struct BALL *Ball);
-extern void DeleteBall(struct BALL *Ball);
-extern void MoveBall(struct BALL *Ball);
-extern void BounceBallY(struct BALL *const Ball, DirectionY Direction);
-extern void BounceBallX(struct BALL *const Ball, DirectionX Direction);
+void ResetBall(struct BALL *Ball);
+void DrawBall(struct BALL *Ball);
+void DeleteBall(struct BALL *Ball);
+void MoveBall(struct BALL *Ball);
+void BounceBallY(struct BALL *const Ball, DirectionY Direction);
+void BounceBallX(struct BALL *const Ball, DirectionX Direction);
 
-extern void DrawPaddle(struct PADDLE *Paddle);
-extern void ResetPaddle(struct PADDLE *Paddle);
-extern void DeletePaddle(struct PADDLE *Paddle);
-extern void MovePaddle(struct PADDLE *Paddle, DirectionX Direction);
-extern Bool CheckBallHitPaddle(struct BALL *Ball, struct PADDLE *Paddle);
+void DrawPaddle(struct PADDLE *Paddle);
+void ResetPaddle(struct PADDLE *Paddle);
+void DeletePaddle(struct PADDLE *Paddle);
+void MovePaddle(struct PADDLE *Paddle, DirectionX Direction);
+Bool CheckBallHitPaddle(struct BALL *Ball, struct PADDLE *Paddle);
 
-extern void DrawBrick(struct BRICK *Brick);
-extern Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const Strike);
-extern void ResetBricks(void);
-extern void DrawAllBricks(void);
-extern void DeleteAllBricks(void);
-extern void DeleteBrick(struct BRICK *Brick);
-extern int BricksLeft(void);
-extern Bool BrickOnLocation(int X, int Y);
+void DrawBrick(struct BRICK *Brick);
+Bool BallStruckBrick(const struct BALL *const Ball, struct BRICKSTRIKE *const Strike);
+void ResetBricks(void);
+void DrawAllBricks(void);
+void DeleteAllBricks(void);
+void DeleteBrick(struct BRICK *Brick);
+int BricksLeft(void);
+Bool BrickOnLocation(int X, int Y);
 
-extern Bool AddCharm(struct BRICK *const Brick);
-extern void DrawCharm(struct CHARM *const Charm);
-extern Bool DeleteCharm(struct CHARM *const Charm);
-extern void MoveCharm(struct CHARM *const Charm);
-extern Bool CheckCharmHitPaddle(struct PADDLE *const Paddle, struct CHARM *const Charm);
-extern struct CHARM *GetCharmByBrick(const struct BRICK *const Brick);
-extern Bool PerformCharmDrop(struct CHARM *const Charm);
-extern Bool ProcessCharmAction(struct CHARM *const Charm, void *OutStream);
-extern void DeleteAllCharms(void);
+Bool AddCharm(struct BRICK *const Brick);
+void DrawCharm(struct CHARM *const Charm);
+Bool DeleteCharm(struct CHARM *const Charm);
+void MoveCharm(struct CHARM *const Charm);
+Bool CheckCharmHitPaddle(struct PADDLE *const Paddle, struct CHARM *const Charm);
+struct CHARM *GetCharmByBrick(const struct BRICK *const Brick);
+Bool PerformCharmDrop(struct CHARM *const Charm);
+Bool ProcessCharmAction(struct CHARM *const Charm, void *OutStream);
+void DeleteAllCharms(void);
 
 /*Globals*/
 extern Bool UseColor;
