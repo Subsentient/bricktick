@@ -5,6 +5,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <ncurses.h>
 #include "bricktick.h"
 
@@ -46,8 +47,13 @@ void ResetBricks(void)
 	const int StartY = HeightFromPaddle;
 	int CWidth = 0;
 	int Inc1 = 0, Inc2 = 0;
+	int CharmCounter = 0;
 	Bool Flip = false;
 	struct BRICK *B2 = NULL;
+	
+	/*Wipe the charms and bricks.*/
+	memset(Charms, 0, sizeof Charms);
+	memset(Bricks, 0, sizeof Bricks);
 	
 	/*Don't let us run off the screen.*/
 	for (; Width * BricksPerLine > BRICKTICK_MAX_X; --Width);
@@ -65,8 +71,23 @@ void ResetBricks(void)
 			B2->X2 = B2->X1 + Width;
 			B2->Y = StartY + Inc1;
 			B2->Visible = true;
+			
+			/*Add charms every few bricks.*/
+			if (CharmCounter == 3)
+			{
+				AddCharm(B2);
+				CharmCounter = 0;
+			}
+			++CharmCounter;		
 		}
-		if (BricksPerLine % 2 == 0) Flip = !Flip; /*Alternate colors.*/
+		
+		if (BricksPerLine % 2 == 0)
+		{ /*Combat repetitiveness from even-numbered brick lines.*/
+			Flip = !Flip; /*Alternate colors.*/
+		
+			/*Vary charm drops.*/
+			if (CharmCounter != 3) ++CharmCounter;
+		}
 	}
 }
 	
@@ -84,6 +105,28 @@ void DrawAllBricks(void)
 			}
 		}
 	}
+}
+
+Bool BrickOnLocation(const int X, const int Y)
+{ /*Check if we have a brick at specific coordinates*/
+	int Inc = 0, Inc2 = 0;
+	struct BRICK *Brick = NULL;
+	
+	for (; Inc < BRICK_MAX_NUMLINES; ++Inc)
+	{
+		for (Inc2 = 0; Inc2 < BRICK_MAX_PERLINE; ++Inc2)
+		{
+			Brick = Bricks[Inc] + Inc2;
+			
+			if (X >= Brick->X1 && Y <= Brick->X2 && Y == Brick->Y)
+			{
+				return true;
+			}
+			
+		}
+	}
+	
+	return false;
 }
 
 void DeleteBrick(struct BRICK *Brick)

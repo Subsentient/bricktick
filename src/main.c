@@ -58,7 +58,9 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 	int SecTick = 0;
 	Bool PaddleMovedLastTick;
 	DirectionX PaddleMoveDir;
-	
+	int Inc = 0;
+	Bool Flip = false;
+	int SlowBallTicks = 0;
 	
 	while ((Key = getch()) != 27) /*27 is ESC*/
 	{		
@@ -148,6 +150,39 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 		}
 			
 	
+		/*Check if a charm hit the paddle.*/
+		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE && Charms[Inc].Type != CHARM_NONE; ++Inc)
+		{
+			if (Charms[Inc].Y != BRICKTICK_MAX_Y - 2) continue;
+			
+			if (CheckCharmHitPaddle(Paddle, Charms + Inc))
+			{
+				void *Ptr = NULL;
+					
+				switch (Charms[Inc].Type)
+				{
+					case CHARM_SCORE:
+						Ptr = &Score;
+						break;
+					case CHARM_LIFE:
+						Ptr = &Lives;
+						break;
+					case CHARM_SLOW:
+						Ptr = &SlowBallTicks;
+						break;
+					default:
+						break;
+				}
+				
+				/*Do the thing the charm does.*/
+				ProcessCharmAction(Charms + Inc, Ptr);
+			}
+			
+			/*In any case, we're done with it.*/
+			DeleteCharm(Charms + Inc);
+			Charms[Inc].Type = CHARM_NONE;
+		}
+		
 		/*We hit a brick.*/
 		if (BallStruckBrick(Ball, &Strike))
 		{
@@ -255,6 +290,16 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 
 				continue;
 			}
+			else
+			{ /*Charm drops.*/
+				struct CHARM *Charm = GetCharmByBrick(Strike.Brick);
+				
+				if (Charm)
+				{ /*We DO have a charm for this brick.*/
+					PerformCharmDrop(Charm); /*Mark it dropped.*/
+					DrawCharm(Charm);
+				}
+			}
 		}
 		
 		switch (Key)
@@ -294,7 +339,19 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 				break;
 		}
 		
-		MoveBall(Ball);
+		Flip = !Flip;
+
+		/*Ball movement, obviously. Flip is used to keep it at half speed if we got a 'slow' charm.*/
+		if (Flip || SlowBallTicks == 0) MoveBall(Ball);
+		
+		/*Decrement slow ball ticks until zero, then the ball goes fast again.*/
+		if (SlowBallTicks > 0) --SlowBallTicks;
+		
+		/*Charm movement.*/		
+		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE && Charms[Inc].Type != CHARM_NONE; ++Inc)
+		{
+			if (Flip) MoveCharm(Charms + Inc);
+		}
 	}
 }
 
@@ -416,6 +473,9 @@ int main(int argc, char **argv)
 		init_pair(2, COLOR_GREEN, COLOR_BLACK);
 		init_pair(3, COLOR_BLACK, COLOR_WHITE);
 		init_pair(4, COLOR_BLUE, COLOR_BLACK);
+		init_pair(5, COLOR_GREEN, COLOR_BLACK);
+		init_pair(6, COLOR_YELLOW, COLOR_BLACK);
+		init_pair(7, COLOR_RED, COLOR_BLACK);
 	}
 	
 	

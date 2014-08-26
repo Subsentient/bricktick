@@ -7,9 +7,10 @@ all:
 	$(CC) $(CFLAGS) -c ball.c
 	$(CC) $(CFLAGS) -c paddle.c
 	$(CC) $(CFLAGS) -c bricks.c
+	$(CC) $(CFLAGS) -c charms.c
 	$(CC) $(CFLAGS) -c main.c
 	
-	$(CC) $(CFLAGS) -o $(OUTFILE) bricks.o ball.o paddle.o main.o $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $(OUTFILE) bricks.o ball.o paddle.o charms.o main.o $(LDFLAGS)
 
 clean:
 	rm -vf *.o *.gch

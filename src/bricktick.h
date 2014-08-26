@@ -49,6 +49,13 @@ struct BRICKSTRIKE
 	struct BRICK *Brick;
 };
 
+struct CHARM
+{ /*Things that drop that we catch with the paddle when we break a brick, etc.*/
+	enum CharmType { CHARM_NONE, CHARM_MIN = 1, CHARM_SCORE = 1, CHARM_LIFE, CHARM_SLOW, CHARM_MAX } Type;
+	struct BRICK *Brick;
+	int X, Y;
+};
+
 /*Functions.*/
 extern void ResetBall(struct BALL *Ball);
 extern void DrawBall(struct BALL *Ball);
@@ -70,6 +77,16 @@ extern void DrawAllBricks(void);
 extern void DeleteAllBricks(void);
 extern void DeleteBrick(struct BRICK *Brick);
 extern int BricksLeft(void);
+extern Bool BrickOnLocation(int X, int Y);
+
+extern Bool AddCharm(struct BRICK *const Brick);
+extern void DrawCharm(struct CHARM *const Charm);
+extern Bool DeleteCharm(struct CHARM *const Charm);
+extern void MoveCharm(struct CHARM *const Charm);
+extern Bool CheckCharmHitPaddle(struct PADDLE *const Paddle, struct CHARM *const Charm);
+extern struct CHARM *GetCharmByBrick(const struct BRICK *const Brick);
+extern Bool PerformCharmDrop(struct CHARM *const Charm);
+extern Bool ProcessCharmAction(struct CHARM *const Charm, void *OutStream);
 
 /*Globals*/
 extern Bool UseColor;
@@ -77,4 +94,4 @@ extern struct BRICK Bricks[BRICK_MAX_NUMLINES][BRICK_MAX_PERLINE];
 extern int BrickNumLines;
 extern int BricksPerLine;
 extern int HeightFromPaddle;
-
+extern struct CHARM Charms[BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE]; /*Capable of accomodating all bricks if necessary.*/
