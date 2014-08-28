@@ -13,4 +13,4 @@ all:
 	$(CC) $(CFLAGS) -o $(OUTFILE) bricks.o ball.o paddle.o charms.o main.o $(LDFLAGS)
 
 clean:
-	rm -vf *.o *.gch
+	rm -f *.o *.gch

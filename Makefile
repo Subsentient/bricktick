@@ -4,9 +4,9 @@ PREFIX = /usr/local
 all:
 	$(MAKE) -C src all
 clean:
-	rm -fv bricktick
+	rm -f bricktick
 	$(MAKE) -C src clean
 install:
 	install -m 755 bricktick $(PREFIX)/bin/
 uninstall:
-	rm -fv $(PREFIX)/bin/bricktick
+	rm -f $(PREFIX)/bin/bricktick
