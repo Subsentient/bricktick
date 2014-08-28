@@ -47,6 +47,7 @@ static Bool SetLevel(const int Level_);
 static void ProcessGameOver(struct BALL *Ball, struct PADDLE *Paddle);
 static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle);
 static void DrawStats(void);
+static void DrawGreeting(void);
 
 /*Functions*/
 
@@ -454,9 +455,26 @@ int main(int argc, char **argv)
 		{
 			UseColor = false;
 		}
+		else if (!strcmp("--version", argv[Inc]))
+		{
+			printf("Bricktick brick breaker v" BRICKTICK_VERSION "\n"
+					"By Subsentient.\n");
+			fflush(NULL);
+			exit(0);
+		}
+		else if (!strcmp("--help", argv[Inc]))
+		{
+			printf("Command line options:\n\t"
+					"--help: Show this help.\n\t"
+					"--nocolor: Run Bricktick with no color.\n\t"
+					"--version: Display version and exit.\n");
+			fflush(NULL);
+			exit(0);
+		}
 		else
 		{
-			fprintf(stderr, "Bad command line argument \"%s\".\n", argv[Inc]);
+			fprintf(stderr, "Bad command line argument \"%s\".\n"
+					"Use --help for command line options.\n", argv[Inc]);
 			exit(1);
 		}
 	}
@@ -481,10 +499,6 @@ int main(int argc, char **argv)
 	
 	/*Various ncurses things.*/
 	noecho();
-	halfdelay(1);
-	keypad(stdscr, true);
-	set_escdelay(25);
-	curs_set(0);
 	
 	if (UseColor)
 	{ /*Color fireup.*/
@@ -498,6 +512,28 @@ int main(int argc, char **argv)
 		init_pair(7, COLOR_RED, COLOR_BLACK);
 	}
 	
+	/*Greeting.*/
+GreetAsk:
+	DrawGreeting();
+	switch (getch())
+	{
+		case 27: /*27 is ESC key*/
+			endwin();
+			exit(0);
+			break;
+		case ' ':
+			clear(); /*Wipe the message from the screen.*/
+			break;
+		default:
+			goto GreetAsk;
+	}
+	
+	halfdelay(1);
+	keypad(stdscr, true);
+	set_escdelay(25);
+	curs_set(0);
+	
+
 	
 	/*Show our initial lives count.*/
 	DrawStats();
@@ -554,6 +590,37 @@ static void DrawMessage(const char *const Message)
 {
 	move(BRICKTICK_MAX_Y / 2, (BRICKTICK_MAX_X - strlen(Message)) / 2);
 	addstr(Message);
+	refresh();
+}
+
+static void DrawGreeting(void)
+{
+	int Inc = 0;
+	const struct
+	{
+		const char *Msg;
+		int Color;
+	} Greeting[] = {
+				{ "Welcome to Bricktick v" BRICKTICK_VERSION "!", COLOR_PAIR(1) },
+				{ "Charms:", COLOR_PAIR(1) },
+				{ "% is +1,000 score.", COLOR_PAIR(5) },
+				{ "@ is +1 lives,", COLOR_PAIR(6) },
+				{ "# is 10 second slow ball.", COLOR_PAIR(7) },
+				{ "Press space to start a game or ESC to exit.", COLOR_PAIR(1) },
+				{ NULL }
+					};
+					
+	for (; Greeting[Inc].Msg != NULL; ++Inc)
+	{
+		move(BRICKTICK_MAX_Y / 2 + Inc - (sizeof Greeting / sizeof *Greeting / 2),
+			(BRICKTICK_MAX_X - strlen(Greeting[Inc].Msg)) / 2);
+		
+		if (UseColor) attron(Greeting[Inc].Color);
+		addch(*Greeting[Inc].Msg); /*We do the first character so only the first charm is colored.*/
+		if (UseColor) attroff(Greeting[Inc].Color), attrset(COLOR_PAIR(1));
+		
+		addstr(Greeting[Inc].Msg + 1);
+	}
 	refresh();
 }
 

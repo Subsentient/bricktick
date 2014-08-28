@@ -17,6 +17,8 @@
 #define BRICK_MAX_PERLINE 20
 #define BRICK_DEFAULT_HEIGHT 3
 
+#define BRICKTICK_VERSION "0.7"
+
 typedef signed char Bool;
 
 typedef enum { LEFT, RIGHT, X_NEUTRAL } DirectionX;
