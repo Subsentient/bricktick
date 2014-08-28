@@ -158,6 +158,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 			if (CheckCharmHitPaddle(Paddle, Charms + Inc))
 			{
 				void *Ptr = NULL;
+				const char *const Strings[] = { "+1,000 Score", "+1 Lives", "10 Second Slow Ball" };
 					
 				switch (Charms[Inc].Type)
 				{
@@ -172,6 +173,15 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 						break;
 					default:
 						break;
+				}
+				
+				if (Charms[Inc].Type != CHARM_NONE)
+				{ /*Show a message on what type of charm we have here.*/
+					DrawMessage(Strings[Charms[Inc].Type - 1]); fflush(NULL);
+					usleep(500000);
+					DeleteMessage();
+					DrawAllBricks();
+					DrawStats();
 				}
 				
 				/*Do the thing the charm does.*/
