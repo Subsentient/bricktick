@@ -4,7 +4,7 @@
  * Created in 2014 by Subsentient
  */
 
-#include <ncurses.h>
+#include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -530,7 +530,9 @@ GreetAsk:
 	
 	halfdelay(1);
 	keypad(stdscr, true);
+#if NCURSES_VERSION_MAJOR >= 5 && NCURSES_VERSION_MINOR >=4
 	set_escdelay(25);
+#endif
 	curs_set(0);
 	
 

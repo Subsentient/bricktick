@@ -4,7 +4,7 @@
  * Created in 2014 by Subsentient
  */
 
-#include <ncurses.h>
+#include <curses.h>
 #include <stdlib.h>
 #include "bricktick.h"
 

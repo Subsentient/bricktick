@@ -7,7 +7,7 @@
 
 /**charms.c, Charms like lives, slowdown, etc.**/
  
-#include <ncurses.h>
+#include <curses.h>
 #include "bricktick.h"
 
 /*Globals*/

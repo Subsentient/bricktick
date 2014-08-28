@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <ncurses.h>
+#include <curses.h>
 #include "bricktick.h"
 
 struct BRICK Bricks[BRICK_MAX_NUMLINES][BRICK_MAX_PERLINE];
