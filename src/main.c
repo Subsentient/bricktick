@@ -490,12 +490,8 @@ int main(int argc, char **argv)
 		
 	}
 	
-	if (!has_colors() && UseColor)
-	{
-		endwin();
-		fprintf(stderr, "Color is not supported. Pass --nocolor to play without it.\n");
-		exit(1);
-	}
+	/*Color not supported.*/
+	if (!has_colors()) UseColor = false;
 	
 	/*Various ncurses things.*/
 	noecho();
