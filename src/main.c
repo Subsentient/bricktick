@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/stat.h>
 #include "bricktick.h"
 
 #define BRICKTICK_NUMLEVELS 7
@@ -28,6 +29,7 @@ static int Lives = BRICKTICK_NUMLIVES;
 static int Level = 1;
 static int Score = 0;
 Bool UseColor = true;
+
 const struct LEVEL Levels[BRICKTICK_NUMLEVELS] =
 					{
 						{ BRICK_DEFAULT_NUMLINES - 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
@@ -48,6 +50,8 @@ static void ProcessGameOver(struct BALL *Ball, struct PADDLE *Paddle);
 static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle);
 static void DrawStats(void);
 static void DrawGreeting(void);
+static Bool LoadGame(struct BALL *OutBall, struct PADDLE *OutPaddle);
+static Bool SaveGame(const struct BALL *Ball, const struct PADDLE *Paddle);
 
 /*Functions*/
 
@@ -331,6 +335,50 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 				PaddleMovedLastTick = true;
 				PaddleMoveDir = RIGHT;
 				break;
+			case 's': /*They want to save the game.*/
+				if (SaveGame(Ball, Paddle))
+				{
+					DrawMessage("Game saved.");
+				}
+				else
+				{
+					DrawMessage("Failed to save game.");
+				}
+				fflush(NULL);
+				usleep(500000);
+				
+				DeleteMessage();
+				DrawAllBricks(); /*Redraw bricks if damaged.*/
+				
+				break;
+			case 'o': /*They want us to load a game.*/
+			{
+				const Bool LoadedOk = LoadGame(Ball, Paddle);
+				
+				if (LoadedOk)
+				{
+					/*Restore the state.*/
+					clear();
+					
+					DrawBall(Ball);
+					DrawPaddle(Paddle);
+					DrawStats();
+					DrawAllBricks();
+					
+					DrawMessage("Game loaded.");
+				}
+				else
+				{
+					DrawMessage("Failed to load game.");
+				}
+
+				fflush(NULL);
+				usleep(500000);
+				
+				DeleteMessage();
+				DrawAllBricks();
+				break;
+			}
 			case ' ':
 			{
 				DrawMessage("PAUSED");
@@ -697,4 +745,91 @@ static void WaitForUserLaunch(void)
 		exit(0);
 	}
 
+}
+
+static Bool SaveGame(const struct BALL *Ball, const struct PADDLE *Paddle)
+{ /*Writes the current game, score, etc to our config dir.*/
+	FILE *Desc = NULL;
+	char SaveFile[1024];
+	struct stat FileStat;
+	char ConfigDir[1024];
+	
+	snprintf(ConfigDir, sizeof SaveFile, "%s/.bricktick", getenv("HOME"));
+	snprintf(SaveFile, sizeof SaveFile, "%s/savegame.bin", ConfigDir);
+	
+	/*Create config directory if it does not exist.*/
+	if (stat(ConfigDir, &FileStat) != 0) mkdir(ConfigDir, 0755);
+	
+	if (!(Desc = fopen(SaveFile, "wb")))
+	{
+		return false;
+	}
+	
+	/*write bricks.*/
+	fwrite(&Bricks, 1, sizeof Bricks, Desc);
+	
+	/*write charms.*/
+	fwrite(&Charms, 1, sizeof Charms, Desc);
+	
+	/*write paddle.*/
+	fwrite(Paddle, 1, sizeof(struct PADDLE), Desc);
+	
+	/*write ball.*/
+	fwrite(Ball, 1, sizeof(struct BALL), Desc);
+	
+	/*write some extra brick data.*/
+	fwrite(&BrickNumLines, 1, sizeof(int), Desc);
+	fwrite(&BricksPerLine, 1, sizeof(int), Desc);
+	fwrite(&HeightFromPaddle, 1, sizeof(int), Desc);
+	
+	/*write score, lives, and level.*/
+	fwrite(&Score, 1, sizeof(int), Desc);
+	fwrite(&Lives, 1, sizeof(int), Desc);
+	fwrite(&Level, 1, sizeof(int), Desc);
+	
+	/*We're done.*/
+	fclose(Desc);
+	
+	return true;
+}
+
+
+static Bool LoadGame(struct BALL *OutBall, struct PADDLE *OutPaddle)
+{
+	FILE *Desc = NULL;
+	char SaveFile[1024];
+	
+	snprintf(SaveFile, sizeof SaveFile, "%s/.bricktick/savegame.bin", getenv("HOME"));
+
+	if (!(Desc = fopen(SaveFile, "rb")))
+	{
+		return false;
+	}
+	
+	/*restore bricks.*/
+	fread(&Bricks, 1, sizeof Bricks, Desc);
+	
+	/*restore charms.*/
+	fread(&Charms, 1, sizeof Charms, Desc);
+	
+	/*restore paddle.*/
+	fread(OutPaddle, 1, sizeof(struct PADDLE), Desc);
+	
+	/*restore ball.*/
+	fread(OutBall, 1, sizeof(struct BALL), Desc);
+	
+	/*restore some extra brick data.*/
+	fread(&BrickNumLines, 1, sizeof(int), Desc);
+	fread(&BricksPerLine, 1, sizeof(int), Desc);
+	fread(&HeightFromPaddle, 1, sizeof(int), Desc);
+	
+	/*restore score, lives, and level.*/
+	fread(&Score, 1, sizeof(int), Desc);
+	fread(&Lives, 1, sizeof(int), Desc);
+	fread(&Level, 1, sizeof(int), Desc);
+	
+	/*We're done.*/
+	fclose(Desc);
+	
+	return true;
 }
