@@ -506,6 +506,15 @@ int main(int argc, char **argv)
 		init_pair(5, COLOR_GREEN, COLOR_BLACK);
 		init_pair(6, COLOR_YELLOW, COLOR_BLACK);
 		init_pair(7, COLOR_RED, COLOR_BLACK);
+		
+		
+		/*Fire up colors for the bricks.*/
+		init_pair(BRICK_COLORS_START, COLOR_GREEN, COLOR_BLACK);
+		init_pair(BRICK_COLORS_START + 1, COLOR_BLUE, COLOR_BLACK);
+		init_pair(BRICK_COLORS_START + 2, COLOR_YELLOW, COLOR_BLACK);
+		init_pair(BRICK_COLORS_START + 3, COLOR_MAGENTA, COLOR_BLACK);
+		init_pair(BRICK_COLORS_START + 4, COLOR_CYAN, COLOR_BLACK);
+		init_pair(BRICK_COLORS_END, COLOR_RED, COLOR_BLACK);
 	}
 	
 	/*Greeting.*/

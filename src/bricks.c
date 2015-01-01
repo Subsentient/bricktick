@@ -17,7 +17,7 @@ int HeightFromPaddle = BRICK_DEFAULT_HEIGHT; /*How far down from the ceiling the
 void DrawBrick(struct BRICK *Brick)
 { /*Draw a single brick.*/
 	int Inc = 0;
-	int Color = UseColor ? COLOR_PAIR(Brick->CF ? 4 : 2) : 0;
+	int Color = UseColor ? COLOR_PAIR(Brick->Color) : 0;
 	
 	if (!Brick->Visible) return;
 	
@@ -48,7 +48,6 @@ void ResetBricks(void)
 	int CWidth = 0;
 	int Inc1 = 0, Inc2 = 0;
 	int CharmCounter = 0;
-	Bool Flip = false;
 	struct BRICK *B2 = NULL;
 	
 	/*Wipe the charms and bricks.*/
@@ -66,11 +65,11 @@ void ResetBricks(void)
 			
 			B2 = &Bricks[Inc1][Inc2];
 			
-			B2->CF = (Flip = !Flip);
 			B2->X1 = CWidth;
 			B2->X2 = B2->X1 + Width;
 			B2->Y = StartY + Inc1;
 			B2->Visible = true;
+			B2->Color = (rand() / (RAND_MAX / (BRICK_COLORS_END + 1 - BRICK_COLORS_START))) + BRICK_COLORS_START;
 			
 			/*Add charms every few bricks.*/
 			if (CharmCounter == 3)
@@ -82,9 +81,7 @@ void ResetBricks(void)
 		}
 		
 		if (BricksPerLine % 2 == 0)
-		{ /*Combat repetitiveness from even-numbered brick lines.*/
-			Flip = !Flip; /*Alternate colors.*/
-		
+		{
 			/*Vary charm drops.*/
 			if (CharmCounter != 3) ++CharmCounter;
 		}

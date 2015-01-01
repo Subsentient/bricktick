@@ -16,7 +16,8 @@
 #define BRICK_MAX_NUMLINES 12
 #define BRICK_MAX_PERLINE 20
 #define BRICK_DEFAULT_HEIGHT 3
-
+#define BRICK_COLORS_START 10
+#define BRICK_COLORS_END 15
 #define BRICKTICK_VERSION "0.7"
 
 typedef signed char Bool;
@@ -41,7 +42,7 @@ struct BRICK
 {
 	int X1, X2, Y;
 	unsigned int Visible : 1;
-	unsigned int CF : 1; /*Zero, we are green, one, we are blue.*/
+	unsigned int Color; /*Zero, we are green, one, we are blue.*/
 };
 
 struct BRICKSTRIKE
