@@ -499,6 +499,7 @@ int main(int argc, char **argv)
 	int Inc = 1;
 	struct BALL Ball = { 0 };
 	struct PADDLE Paddle = { 0 };
+	Bool DoLoadGame = false;
 	
 	for (; Inc < argc; ++Inc)
 	{ /*Argument parsing.*/
@@ -584,6 +585,12 @@ GreetAsk:
 			clear(); /*Wipe the message from the screen.*/
 			DrawBorders(); /*Redraw borders.*/
 			break;
+		case 'o':
+			clear();
+			DrawBorders();
+			DoLoadGame = true;
+			LoadGame(&Ball, &Paddle);
+			break;
 		default:
 			goto GreetAsk;
 	}
@@ -596,20 +603,30 @@ GreetAsk:
 	curs_set(0);
 	
 
+	if (DoLoadGame)
+	{
+		DrawStats();
+		DrawBall(&Ball);
+		DrawPaddle(&Paddle);
+		DrawAllBricks();
+	}
+	else
+	{
+		/*Show our initial lives count.*/
+		DrawStats();
 	
-	/*Show our initial lives count.*/
-	DrawStats();
-
-	/*Reset to level 1.*/
-	SetLevel(1);
+		/*Reset to level 1.*/
+		SetLevel(1);
+		
+		ResetBall(&Ball);
+		ResetPaddle(&Paddle);
+		
+		DrawBall(&Ball);
+		DrawPaddle(&Paddle);
+		ResetBricks();
+		DrawAllBricks();
+	}
 	
-	ResetBall(&Ball);
-	ResetPaddle(&Paddle);
-	
-	DrawBall(&Ball);
-	DrawPaddle(&Paddle);
-	ResetBricks();
-	DrawAllBricks();
 	/*Wait for L key.*/
 	WaitForUserLaunch();
 	DrawAllBricks(); /*Redraw to fix goofing by WaitForUserLaunch().*/
@@ -668,7 +685,8 @@ static void DrawGreeting(void)
 				{ "% is +1,000 score.", COLOR_PAIR(5) },
 				{ "@ is +1 lives,", COLOR_PAIR(6) },
 				{ "# is 10 second slow ball.", COLOR_PAIR(7) },
-				{ "Press space to start a game or ESC to exit.", COLOR_PAIR(1) },
+				{ "Ingame, press 's' to save a game and 'o' to load it.", COLOR_PAIR(1) },
+				{ "Press space to start a game, 'o' to load one, or ESC to exit.", COLOR_PAIR(1) },
 				{ NULL }
 					};
 					
@@ -859,7 +877,7 @@ static void DrawBorders(void)
 { /*If we're greater than 80x24, draw borders for us so it doesn't look like the ball will fly out into nowhere.*/
 	unsigned Inc = 0;
 	
-	if (COLS > BRICKTICK_MAX_X)
+	if (LINES > BRICKTICK_MAX_Y)
 	{
 		move(BRICKTICK_MAX_Y, 0);
 		
@@ -870,7 +888,7 @@ static void DrawBorders(void)
 		}
 	}
 	
-	if (LINES > BRICKTICK_MAX_Y)
+	if (COLS > BRICKTICK_MAX_X)
 	{
 		for (Inc = 0; Inc < BRICKTICK_MAX_Y + 1; ++Inc)
 		{
