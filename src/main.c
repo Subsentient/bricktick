@@ -53,6 +53,7 @@ static void DrawStats(void);
 static void DrawGreeting(void);
 static Bool LoadGame(struct BALL *OutBall, struct PADDLE *OutPaddle);
 static Bool SaveGame(const struct BALL *Ball, const struct PADDLE *Paddle);
+static void DrawBorders(void);
 
 /*Functions*/
 
@@ -159,7 +160,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 		/*Check if a charm hit the paddle.*/
 		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
 		{
-			if (Charms[Inc].Type == CHARM_NONE || Charms[Inc].Brick != NULL || Charms[Inc].Y != BRICKTICK_MAX_Y - 2) continue;
+			if (Charms[Inc].Type == CHARM_NONE || !Charms[Inc].Dropped || Charms[Inc].Y != BRICKTICK_MAX_Y - 2) continue;
 			
 			if (CheckCharmHitPaddle(Paddle, Charms + Inc))
 			{
@@ -360,6 +361,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 				{
 					/*Restore the state.*/
 					clear();
+					DrawBorders(); /*Need to redraw these after clearing the screen.*/
 					
 					DrawBall(Ball);
 					DrawPaddle(Paddle);
@@ -416,7 +418,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 		/*Charm movement.*/		
 		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
 		{
-			if (Charms[Inc].Type == CHARM_NONE || Charms[Inc].Brick != NULL) continue;
+			if (Charms[Inc].Type == CHARM_NONE || !Charms[Inc].Dropped) continue;
 			
 			if (Flip) MoveCharm(Charms + Inc);
 		}
@@ -566,6 +568,9 @@ int main(int argc, char **argv)
 		init_pair(BRICK_COLORS_END, COLOR_RED, COLOR_BLACK);
 	}
 	
+	/*Draw borders for consoles bigger than our 80x24 playing area.*/
+	DrawBorders();
+	
 	/*Greeting.*/
 GreetAsk:
 	DrawGreeting();
@@ -577,6 +582,7 @@ GreetAsk:
 			break;
 		case ' ':
 			clear(); /*Wipe the message from the screen.*/
+			DrawBorders(); /*Redraw borders.*/
 			break;
 		default:
 			goto GreetAsk;
@@ -847,3 +853,33 @@ static Bool LoadGame(struct BALL *OutBall, struct PADDLE *OutPaddle)
 	
 	return true;
 }
+
+
+static void DrawBorders(void)
+{ /*If we're greater than 80x24, draw borders for us so it doesn't look like the ball will fly out into nowhere.*/
+	unsigned Inc = 0;
+	
+	if (COLS > BRICKTICK_MAX_X)
+	{
+		move(BRICKTICK_MAX_Y, 0);
+		
+		for (; Inc < BRICKTICK_MAX_X + 1; ++Inc)
+		{
+			if (UseColor) addch('-' | COLOR_PAIR(1));
+			else addch('-');
+		}
+	}
+	
+	if (LINES > BRICKTICK_MAX_Y)
+	{
+		for (Inc = 0; Inc < BRICKTICK_MAX_Y + 1; ++Inc)
+		{
+			move(Inc, BRICKTICK_MAX_X);
+			if (UseColor) addch('|' | COLOR_PAIR(1));
+			else addch('|');
+		}
+	}
+	
+	refresh();
+}
+

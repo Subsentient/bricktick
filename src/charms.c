@@ -26,7 +26,10 @@ Bool AddCharm(struct BRICK *const Brick)
 	
 	if (Inc == BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE) return false; /*No space left.*/
 	
-	Charms[Inc].Brick = Brick; /*Store the brick we fall from.*/
+	Charms[Inc].BrickX1 = Brick->X1;
+	Charms[Inc].BrickX2 = Brick->X2;
+	Charms[Inc].BrickY = Brick->Y;
+	Charms[Inc].Dropped = false;
 	
 	Charms[Inc].Type = Type; /*Our non-randomized charm type, e.g. score, life, slow, etc.*/
 	
@@ -41,7 +44,7 @@ Bool AddCharm(struct BRICK *const Brick)
 
 void MoveCharm(struct CHARM *const Charm)
 { /*Only move one out of two times. In other words, half speed.*/
-	if (!Charm || Charm->Brick != NULL) return; /*Non-null means its brick hasn't been destroyed.*/
+	if (!Charm || !Charm->Dropped) return; /*Non-null means its brick hasn't been destroyed.*/
 	
 	DeleteCharm(Charm);
 	
@@ -57,7 +60,7 @@ void DrawCharm(struct CHARM *const Charm)
 	int Color = 0;
 	char Character = 0;
 
-	if (!Charm || Charm->Brick != NULL) return; /*Non-null means its brick hasn't been destroyed.*/
+	if (!Charm || !Charm->Dropped) return; /*Non-null means its brick hasn't been destroyed.*/
 	
 	/*Special exception on long drops with holes between bricks etc.*/
 	while (BrickOnLocation(Charm->X, Charm->Y)) ++Charm->Y;
@@ -90,9 +93,9 @@ void DrawCharm(struct CHARM *const Charm)
 
 Bool PerformCharmDrop(struct CHARM *const Charm)
 {
-	if (!Charm || !Charm->Brick || Charm->Type == CHARM_NONE) return false;
+	if (!Charm || Charm->Dropped || Charm->Type == CHARM_NONE) return false;
 	
-	Charm->Brick = NULL; /*Set brick to null to signal we dropped it.*/
+	Charm->Dropped = true; /*Set brick to null to signal we dropped it.*/
 	
 	return true;
 }
@@ -105,7 +108,12 @@ struct CHARM *GetCharmByBrick(const struct BRICK *const Brick)
 	
 	for (; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
 	{
-		if (Charms[Inc].Brick != NULL && Charms[Inc].Type != CHARM_NONE && Brick == Charms[Inc].Brick) return Charms + Inc;
+		if (!Charms[Inc].Dropped && Charms[Inc].Type != CHARM_NONE &&
+			Charms[Inc].BrickX1 == Brick->X1 && Charms[Inc].BrickX2 == Brick->X2 &&
+			Charms[Inc].BrickY == Brick->Y)
+		{
+			return Charms + Inc;
+		}
 	}
 	
 	return NULL;
@@ -120,7 +128,7 @@ Bool CheckCharmHitPaddle(struct PADDLE *const Paddle, struct CHARM *const Charm)
 
 Bool DeleteCharm(struct CHARM *const Charm)
 {
-	if (!Charm || Charm->Brick != NULL || Charm->Type == CHARM_NONE) return false; /*Non-null means its brick hasn't been destroyed.*/
+	if (!Charm || !Charm->Dropped || Charm->Type == CHARM_NONE) return false; /*Non-null means its brick hasn't been destroyed.*/
 	move(Charm->Y, Charm->X);
 	addch(' ');
 	refresh();
@@ -133,7 +141,7 @@ void DeleteAllCharms(void)
 	
 	for (; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
 	{
-		if (Charms[Inc].Type == CHARM_NONE || Charms[Inc].Brick != NULL) continue;
+		if (Charms[Inc].Type == CHARM_NONE || !Charms[Inc].Dropped) continue;
 		DeleteCharm(Charms + Inc);
 	}
 }

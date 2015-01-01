@@ -55,7 +55,8 @@ struct BRICKSTRIKE
 struct CHARM
 { /*Things that drop that we catch with the paddle when we break a brick, etc.*/
 	enum CharmType { CHARM_NONE, CHARM_MIN = 1, CHARM_SCORE = 1, CHARM_LIFE, CHARM_SLOW, CHARM_MAX } Type;
-	struct BRICK *Brick;
+	int BrickX1, BrickX2, BrickY; /*Brick locations.*/
+	Bool Dropped;
 	int X, Y;
 };
 
