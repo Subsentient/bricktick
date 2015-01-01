@@ -422,6 +422,9 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 			
 			if (Flip) MoveCharm(Charms + Inc);
 		}
+		
+		/*Redraw borders in case of terminal resize.*/
+		DrawBorders();
 	}
 }
 
