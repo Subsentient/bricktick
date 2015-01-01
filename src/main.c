@@ -40,6 +40,7 @@ const struct LEVEL Levels[BRICKTICK_NUMLEVELS] =
 						{ BRICK_DEFAULT_NUMLINES + 9, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 5 },
 						{ BRICK_MAX_NUMLINES, BRICK_MAX_PERLINE, BRICK_DEFAULT_HEIGHT },
 					};
+static const unsigned SaveGameVersion = 0x001;
 					
 /*Prototypes for static functions.*/
 static void DrawMessage(const char *const Message);
@@ -765,6 +766,9 @@ static Bool SaveGame(const struct BALL *Ball, const struct PADDLE *Paddle)
 		return false;
 	}
 	
+	/*write savegame version.*/
+	fwrite(&SaveGameVersion, 1, sizeof(int), Desc);
+	
 	/*write bricks.*/
 	fwrite(&Bricks, 1, sizeof Bricks, Desc);
 	
@@ -798,11 +802,21 @@ static Bool LoadGame(struct BALL *OutBall, struct PADDLE *OutPaddle)
 {
 	FILE *Desc = NULL;
 	char SaveFile[1024];
+	unsigned Ver;
 	
 	snprintf(SaveFile, sizeof SaveFile, "%s/.bricktick/savegame.bin", getenv("HOME"));
 
 	if (!(Desc = fopen(SaveFile, "rb")))
 	{
+		return false;
+	}
+	
+	/**Check savegame version!**/
+	fread(&Ver, 1, sizeof Ver, Desc);
+	
+	if (Ver != SaveGameVersion)
+	{
+		fclose(Desc);
 		return false;
 	}
 	
