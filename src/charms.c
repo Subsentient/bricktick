@@ -44,7 +44,7 @@ Bool AddCharm(struct BRICK *const Brick)
 
 void MoveCharm(struct CHARM *const Charm)
 { /*Only move one out of two times. In other words, half speed.*/
-	if (!Charm || !Charm->Dropped) return; /*Non-null means its brick hasn't been destroyed.*/
+	if (!Charm || !Charm->Dropped) return;
 	
 	DeleteCharm(Charm);
 	
@@ -60,7 +60,7 @@ void DrawCharm(struct CHARM *const Charm)
 	int Color = 0;
 	char Character = 0;
 
-	if (!Charm || !Charm->Dropped) return; /*Non-null means its brick hasn't been destroyed.*/
+	if (!Charm || !Charm->Dropped) return;
 	
 	/*Special exception on long drops with holes between bricks etc.*/
 	while (BrickOnLocation(Charm->X, Charm->Y)) ++Charm->Y;
@@ -128,7 +128,7 @@ Bool CheckCharmHitPaddle(struct PADDLE *const Paddle, struct CHARM *const Charm)
 
 Bool DeleteCharm(struct CHARM *const Charm)
 {
-	if (!Charm || !Charm->Dropped || Charm->Type == CHARM_NONE) return false; /*Non-null means its brick hasn't been destroyed.*/
+	if (!Charm || !Charm->Dropped || Charm->Type == CHARM_NONE) return false;
 	move(Charm->Y, Charm->X);
 	addch(' ');
 	refresh();

@@ -42,7 +42,7 @@ struct BRICK
 {
 	int X1, X2, Y;
 	unsigned int Visible : 1;
-	unsigned int Color; /*Zero, we are green, one, we are blue.*/
+	unsigned int Color;
 };
 
 struct BRICKSTRIKE
