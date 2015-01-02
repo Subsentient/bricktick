@@ -35,10 +35,10 @@ const struct LEVEL Levels[BRICKTICK_NUMLEVELS] =
 						{ BRICK_DEFAULT_NUMLINES - 2, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
 						{ BRICK_DEFAULT_NUMLINES, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
 						{ BRICK_DEFAULT_NUMLINES + 3, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT },
-						{ BRICK_DEFAULT_NUMLINES + 5, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 2 },
-						{ BRICK_DEFAULT_NUMLINES + 7, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 3 },
-						{ BRICK_DEFAULT_NUMLINES + 9, BRICK_DEFAULT_PERLINE * 2, BRICK_DEFAULT_HEIGHT + 5 },
-						{ BRICK_MAX_NUMLINES, BRICK_MAX_PERLINE, BRICK_DEFAULT_HEIGHT },
+						{ BRICK_DEFAULT_NUMLINES + 4, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 2 },
+						{ BRICK_MAX_NUMLINES, BRICK_DEFAULT_PERLINE, BRICK_DEFAULT_HEIGHT + 3 },
+						{ BRICK_DEFAULT_NUMLINES + 5, BRICK_MAX_PERLINE, BRICK_DEFAULT_HEIGHT + 4 },
+						{ BRICK_MAX_NUMLINES, BRICK_MAX_PERLINE, BRICK_DEFAULT_HEIGHT + 5 },
 					};
 static const unsigned SaveGameVersion = 0x001;
 					
@@ -503,6 +503,7 @@ int main(int argc, char **argv)
 	struct BALL Ball = { 0 };
 	struct PADDLE Paddle = { 0 };
 	Bool DoLoadGame = false;
+	int GotoLevel = 0;
 	
 	for (; Inc < argc; ++Inc)
 	{ /*Argument parsing.*/
@@ -525,6 +526,16 @@ int main(int argc, char **argv)
 					"--version: Display version and exit.\n");
 			fflush(NULL);
 			exit(0);
+		}
+		else if (!strncmp("--level=", argv[Inc], sizeof "--level=" - 1))
+		{
+			GotoLevel = atoi(argv[Inc] + sizeof "--level=" - 1);
+			
+			if (GotoLevel > sizeof Levels / sizeof *Levels)
+			{
+				fprintf(stderr, "The maximum level is %d.\n", sizeof Levels / sizeof *Levels); fflush(NULL);
+				exit(1);
+			}
 		}
 		else
 		{
@@ -577,25 +588,34 @@ int main(int argc, char **argv)
 	
 	/*Greeting.*/
 GreetAsk:
-	DrawGreeting();
-	switch (getch())
+
+	if (!GotoLevel)
+	{ /*If they specified a level let them go straigth to game start.*/
+		DrawGreeting();
+		switch (getch())
+		{
+			case 27: /*27 is ESC key*/
+				endwin();
+				exit(0);
+				break;
+			case ' ':
+				clear(); /*Wipe the message from the screen.*/
+				DrawBorders(); /*Redraw borders.*/
+				break;
+			case 'o':
+				clear();
+				DrawBorders();
+				DoLoadGame = true;
+				LoadGame(&Ball, &Paddle);
+				break;
+			default:
+				goto GreetAsk;
+		}
+	}
+	else
 	{
-		case 27: /*27 is ESC key*/
-			endwin();
-			exit(0);
-			break;
-		case ' ':
-			clear(); /*Wipe the message from the screen.*/
-			DrawBorders(); /*Redraw borders.*/
-			break;
-		case 'o':
-			clear();
-			DrawBorders();
-			DoLoadGame = true;
-			LoadGame(&Ball, &Paddle);
-			break;
-		default:
-			goto GreetAsk;
+		clear();
+		DrawBorders();
 	}
 	
 	halfdelay(1);
@@ -618,8 +638,8 @@ GreetAsk:
 		/*Show our initial lives count.*/
 		DrawStats();
 	
-		/*Reset to level 1.*/
-		SetLevel(1);
+		/*Reset to level 1 if we haven't specified a level.*/
+		SetLevel(GotoLevel ? GotoLevel : 1);
 		
 		ResetBall(&Ball);
 		ResetPaddle(&Paddle);
