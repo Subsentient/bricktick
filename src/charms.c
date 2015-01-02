@@ -18,7 +18,7 @@ Bool AddCharm(struct BRICK *const Brick)
 { /*Create a charm.*/
 	static enum CharmType Type = CHARM_MIN;
 	int Inc = 0;
-	
+
 	/*Charm type counter/selector thingy.*/
 	if (Type == CHARM_MAX) Type = CHARM_MIN;
 	
@@ -78,6 +78,10 @@ void DrawCharm(struct CHARM *const Charm)
 		case CHARM_SLOW: 
 			Color = UseColor ? COLOR_PAIR(7) : 0;
 			Character = '#';
+			break;
+		case CHARM_NUKE:
+			Color = UseColor ? COLOR_PAIR(4) : 0;
+			Character = '^';
 			break;
 		default:
 			break;
@@ -172,6 +176,13 @@ Bool ProcessCharmAction(struct CHARM *const Charm, void *OutStream)
 			int *SlowBallTicks = OutStream;
 			
 			*SlowBallTicks = 100; /*Ten seconds.*/
+			break;
+		}
+		case CHARM_NUKE:
+		{ /*Pass through all bricks for 3 seconds.*/
+			int *const BallNukeTicks = OutStream; /*3 seconds.*/
+			
+			*BallNukeTicks = 30;
 			break;
 		}
 		default:

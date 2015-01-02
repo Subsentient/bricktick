@@ -67,7 +67,7 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 	DirectionX PaddleMoveDir;
 	int Inc = 0;
 	Bool Flip = false;
-	int SlowBallTicks = 0;
+	int SlowBallTicks = 0, BallNukeTicks = 0;
 	
 	while ((Key = getch()) != 27) /*27 is ESC*/
 	{		
@@ -165,7 +165,8 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 			if (CheckCharmHitPaddle(Paddle, Charms + Inc))
 			{
 				void *Ptr = NULL;
-				const char *const Strings[] = { "+1,000 Score", "+1 Lives", "10 Second Slow Ball" };
+				const char *const Strings[] = { "+1,000 Score", "+1 Lives",
+											"10 Second Slow Ball", "3 second nuke mode" };
 					
 				switch (Charms[Inc].Type)
 				{
@@ -177,6 +178,9 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 						break;
 					case CHARM_SLOW:
 						Ptr = &SlowBallTicks;
+						break;
+					case CHARM_NUKE:
+						Ptr = &BallNukeTicks;
 						break;
 					default:
 						break;
@@ -203,35 +207,39 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 		/*We hit a brick.*/
 		if (BallStruckBrick(Ball, &Strike))
 		{
-			switch (Strike.StrikeV)
-			{
-				case STRIKE_TOP:
-					Ball->DirY = UP;
-					break;
-				case STRIKE_BOTTOM:
-					Ball->DirY = DOWN;
-					break;
-				default:
-					break;
-			}
 			
-			switch (Strike.StrikeH)
+			if (BallNukeTicks == 0) /*Nuclear ball passes through.*/
 			{
-				case STRIKE_LEFT:
-					Ball->DirX = LEFT;
-					break;
-				case STRIKE_RIGHT:
-					Ball->DirX = RIGHT;
-					break;
-				default:
+				switch (Strike.StrikeV)
 				{
-					if (Ball->DirX != X_NEUTRAL) break;
-					else
+					case STRIKE_TOP:
+						Ball->DirY = UP;
+						break;
+					case STRIKE_BOTTOM:
+						Ball->DirY = DOWN;
+						break;
+					default:
+						break;
+				}
+				
+				switch (Strike.StrikeH)
+				{
+					case STRIKE_LEFT:
+						Ball->DirX = LEFT;
+						break;
+					case STRIKE_RIGHT:
+						Ball->DirX = RIGHT;
+						break;
+					default:
 					{
-						Bool Dir = rand() & 1;
-						Ball->DirX = (DirectionX)Dir;
+						if (Ball->DirX != X_NEUTRAL) break;
+						else
+						{
+							Bool Dir = rand() & 1;
+							Ball->DirX = (DirectionX)Dir;
+						}
+						break;
 					}
-					break;
 				}
 			}
 			
@@ -414,6 +422,9 @@ static void GameLoop(struct BALL *const Ball, struct PADDLE *const Paddle)
 		
 		/*Decrement slow ball ticks until zero, then the ball goes fast again.*/
 		if (SlowBallTicks > 0) --SlowBallTicks;
+		
+		/*Decrement nuclear ball until ticks hit zero.*/
+		if (BallNukeTicks > 0) --BallNukeTicks;
 		
 		/*Charm movement.*/		
 		for (Inc = 0; Inc < BRICK_MAX_NUMLINES * BRICK_MAX_PERLINE; ++Inc)
@@ -708,6 +719,7 @@ static void DrawGreeting(void)
 				{ "% is +1,000 score.", COLOR_PAIR(5) },
 				{ "@ is +1 lives,", COLOR_PAIR(6) },
 				{ "# is 10 second slow ball.", COLOR_PAIR(7) },
+				{ "^ is 3 second nuke mode.", COLOR_PAIR(4) },
 				{ "Ingame, press 's' to save a game and 'o' to load it.", COLOR_PAIR(1) },
 				{ "Press space to start a game, 'o' to load one, or ESC to exit.", COLOR_PAIR(1) },
 				{ NULL }
