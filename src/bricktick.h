@@ -18,7 +18,7 @@
 #define BRICK_DEFAULT_HEIGHT 3
 #define BRICK_COLORS_START 10
 #define BRICK_COLORS_END 15
-#define BRICKTICK_VERSION "0.7"
+#define BRICKTICK_VERSION "0.8"
 
 typedef signed char Bool;
 
