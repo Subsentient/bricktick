@@ -16,6 +16,14 @@
 #define BRICKTICK_NUMLEVELS 7
 #define BRICKTICK_NUMLIVES 3
 
+#ifdef WIN32
+#define BT_MKDIR(a, b) mkdir(a)
+#define HOME_ENV "USERPROFILE"
+#else
+#define BT_MKDIR(a, b) mkdir(a, b)
+#define HOME_ENV "HOME"
+#endif /*WIN32*/
+
 /*Types*/
 struct LEVEL
 {
@@ -544,7 +552,7 @@ int main(int argc, char **argv)
 			
 			if (GotoLevel > sizeof Levels / sizeof *Levels)
 			{
-				fprintf(stderr, "The maximum level is %d.\n", sizeof Levels / sizeof *Levels); fflush(NULL);
+				fprintf(stderr, "The maximum level is %u.\n", (unsigned)(sizeof Levels / sizeof *Levels)); fflush(NULL);
 				exit(1);
 			}
 		}
@@ -810,15 +818,15 @@ static void WaitForUserLaunch(void)
 static Bool SaveGame(const struct BALL *Ball, const struct PADDLE *Paddle)
 { /*Writes the current game, score, etc to our config dir.*/
 	FILE *Desc = NULL;
-	char SaveFile[1024];
+	char SaveFile[2048];
 	struct stat FileStat;
 	char ConfigDir[1024];
 	
-	snprintf(ConfigDir, sizeof SaveFile, "%s/.bricktick", getenv("HOME"));
+	snprintf(ConfigDir, sizeof SaveFile, "%s/.bricktick", getenv(HOME_ENV));
 	snprintf(SaveFile, sizeof SaveFile, "%s/savegame.bin", ConfigDir);
 	
 	/*Create config directory if it does not exist.*/
-	if (stat(ConfigDir, &FileStat) != 0) mkdir(ConfigDir, 0755);
+	if (stat(ConfigDir, &FileStat) != 0) BT_MKDIR(ConfigDir, 0755);
 	
 	if (!(Desc = fopen(SaveFile, "wb")))
 	{
@@ -863,7 +871,7 @@ static Bool LoadGame(struct BALL *OutBall, struct PADDLE *OutPaddle)
 	char SaveFile[1024];
 	unsigned Ver;
 	
-	snprintf(SaveFile, sizeof SaveFile, "%s/.bricktick/savegame.bin", getenv("HOME"));
+	snprintf(SaveFile, sizeof SaveFile, "%s/.bricktick/savegame.bin", getenv(HOME_ENV));
 
 	if (!(Desc = fopen(SaveFile, "rb")))
 	{
